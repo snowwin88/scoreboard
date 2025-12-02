@@ -210,8 +210,8 @@
       font-weight: 600;
     }
 
-    /* 底部总计行高亮背景 */
-    tfoot td {
+    /* 总计行高亮背景（现在在 tbody 最上面） */
+    #summaryRow td {
       background: #fff5cc;
       font-weight: 700;
       color: #333;
@@ -220,7 +220,7 @@
 
     /* 当前领先玩家在总计行中的高亮 */
     .leader-cell {
-      background: #ffe08a;
+      background: #ffe08a !important;
       color: #c62828;
     }
     /* 当前领先玩家在文字总分里的高亮 */
@@ -273,25 +273,22 @@
       </div>
     </div>
 
-    <!-- 历史记录（移动到总分汇总下面） -->
+    <!-- 历史记录：总计行在最上方，历史每局倒序排列 -->
     <div class="card">
       <div class="history">
-        <strong>历史每局分数</strong>
+        <strong>历史每局分数（总计在最上方，最新一局在总计下面）</strong>
         <table>
           <thead>
             <tr id="historyHeaderRow"></tr>
           </thead>
           <tbody id="historyBody"></tbody>
-          <tfoot>
-            <tr id="historyFooterRow"></tr>
-          </tfoot>
         </table>
 
         <button class="btn-export" onclick="exportCSV()">导出 CSV</button>
       </div>
     </div>
 
-    <!-- 提示说明移动到页面最底部 -->
+    <!-- 提示说明放在页面最底部 -->
     <div class="card">
       <div class="hint">
         ✦ 默认 4 人，可以通过上方「－ / ＋」调整 2～8 人。<br>
@@ -365,11 +362,6 @@
           nameInput.placeholder = "玩家" + (index + 1) + "（可修改）";
           col.appendChild(nameInput);
 
-          // 当手工修改名字时，不强制同步，但更新一下选项显示
-          nameInput.addEventListener("input", function() {
-            // 自定义名字不影响默认名占用，只在确认时真正使用
-          });
-
           // 分数 + 上下按钮
           var scoreRow = document.createElement("div");
           scoreRow.className = "score-row";
@@ -431,7 +423,6 @@
 
     // 根据已经选中的默认人名，更新所有下拉菜单
     function updateNameOptions() {
-      // 收集目前已经选中的默认名
       var used = {};
       for (var i = 0; i < nameSelects.length; i++) {
         var val = nameSelects[i].value;
@@ -440,12 +431,10 @@
         }
       }
 
-      // 逐个下拉刷新选项
       for (var j = 0; j < nameSelects.length; j++) {
         var sel = nameSelects[j];
         var current = sel.value;
 
-        // 重建 options
         sel.innerHTML = "";
         var optEmpty = document.createElement("option");
         optEmpty.value = "";
@@ -454,26 +443,22 @@
 
         for (var k = 0; k < defaultNames.length; k++) {
           var name = defaultNames[k];
-          // 如果该名字已被其它玩家选中，则不再出现在列表中；
-          // 但保留给当前已经选中的玩家（避免刷新后选项丢失）
           if (used[name] && name !== current) continue;
-
           var opt = document.createElement("option");
           opt.value = name;
           opt.textContent = name;
           sel.appendChild(opt);
         }
 
-        // 恢复当前选择（如果已被删除则退回空）
         sel.value = current || "";
       }
     }
 
     function buildHistoryHeaderFooter() {
       var headerRow = document.getElementById("historyHeaderRow");
-      var footerRow = document.getElementById("historyFooterRow");
+      var tbody = document.getElementById("historyBody");
       headerRow.innerHTML = "";
-      footerRow.innerHTML = "";
+      tbody.innerHTML = "";
 
       // 表头
       var thRound = document.createElement("th");
@@ -486,22 +471,29 @@
         headerRow.appendChild(th);
       }
 
-      // 底部总计行
+      // 总计行（放在 tbody 的第一个 tr）
+      var summaryRow = document.createElement("tr");
+      summaryRow.id = "summaryRow";
+
       var tdLabel = document.createElement("td");
       tdLabel.textContent = "总计";
-      footerRow.appendChild(tdLabel);
+      summaryRow.appendChild(tdLabel);
+
       for (var j = 0; j < playerCount; j++) {
         var td = document.createElement("td");
         td.id = "t" + (j + 1);
         td.textContent = "0";
-        footerRow.appendChild(td);
+        summaryRow.appendChild(td);
       }
+
+      tbody.appendChild(summaryRow);
     }
 
     // ===== 基础工具函数 =====
     function hasHistory() {
       var tbody = document.getElementById("historyBody");
-      return tbody && tbody.children.length > 0;
+      // children.length > 1 说明除了总计之外，还有历史记录
+      return tbody && tbody.children.length > 1;
     }
 
     function anyConfirmed() {
@@ -637,7 +629,7 @@
         totalScores[i] += scoreValues[i];
       }
 
-      // 写入历史记录
+      // 写入历史记录：总计行在最上面，新的一局插在总计下面
       var tbody = document.getElementById("historyBody");
       var tr = document.createElement("tr");
 
@@ -650,7 +642,18 @@
         td2.textContent = scoreValues[j];
         tr.appendChild(td2);
       }
-      tbody.appendChild(tr);
+
+      var summaryRow = document.getElementById("summaryRow");
+      if (summaryRow && summaryRow.parentNode === tbody) {
+        // 插到总计行后面（倒序：最新在上）
+        if (summaryRow.nextSibling) {
+          tbody.insertBefore(tr, summaryRow.nextSibling);
+        } else {
+          tbody.appendChild(tr);
+        }
+      } else {
+        tbody.appendChild(tr);
+      }
 
       // 更新显示
       updateTotalsText();
@@ -702,7 +705,7 @@
       }
     }
 
-    // 更新底部总计行，并高亮总分最高的人
+    // 更新总计行，并高亮总分最高的人
     function updateFooterTotals() {
       var max = Math.max.apply(null, totalScores);
       for (var i = 0; i < playerCount; i++) {
@@ -733,7 +736,7 @@
         "当前总分汇总：暂无（请先完成一局）";
     }
 
-    // 导出历史记录为 CSV
+    // 导出历史记录为 CSV（表头 + 总计 + 历史倒序）
     function exportCSV() {
       var rows = [];
       // 表头：局 + 玩家姓名
@@ -744,7 +747,7 @@
       }
       rows.push(header);
 
-      // 每局记录
+      // 从表格中直接按当前顺序导出：总计在上，其次每局（最新在上）
       var tbody = document.getElementById("historyBody");
       var trList = tbody.getElementsByTagName("tr");
       for (var r = 0; r < trList.length; r++) {
@@ -756,13 +759,6 @@
         }
         rows.push(row);
       }
-
-      // 总计一行
-      var summaryRow = ["总计"];
-      for (var j = 0; j < playerCount; j++) {
-        summaryRow.push(String(totalScores[j]));
-      }
-      rows.push(summaryRow);
 
       // 转换为 CSV 字符串
       function esc(v) {
