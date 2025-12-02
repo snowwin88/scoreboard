@@ -12,7 +12,7 @@
       background: #f5f5f5;
     }
 
-    /* ✅ 宽度自适应：不再限制为 600px */
+    /* 宽度自适应 */
     .container {
       width: 100%;
       margin: 0 auto;
@@ -74,6 +74,18 @@
       box-sizing: border-box;
     }
 
+    /* 默认名下拉选择框 */
+    .name-select {
+      width: 100%;
+      padding: 4px 6px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      box-sizing: border-box;
+      background: #fff;
+    }
+
+    /* 手工输入名字框 */
     .name-input {
       width: 100%;
       padding: 4px 6px;
@@ -223,7 +235,7 @@
     }
 
     .hint {
-      margin-top: 8px;
+      margin-top: 4px;
       font-size: 13px;
       color: #666;
       line-height: 1.4;
@@ -259,16 +271,9 @@
       <div id="totalText" class="totals">
         当前总分汇总：暂无（请先完成一局）
       </div>
-
-      <div class="hint">
-        ✦ 默认 4 人，可以通过上方「－ / ＋」调整 2～8 人。<br>
-        ✦ 可以直接使用默认名字「玩家1~玩家N」，也可以自定义中文名字。<br>
-        ✦ 任意 N−1 人确认后，第 N 人自动算出，保证本局总和 = 0。<br>
-        ✦ 保存本局后自动累计总分，开始下一局；重置整场会清空所有数据与历史。
-      </div>
     </div>
 
-    <!-- 历史记录 -->
+    <!-- 历史记录（移动到总分汇总下面） -->
     <div class="card">
       <div class="history">
         <strong>历史每局分数</strong>
@@ -285,12 +290,35 @@
         <button class="btn-export" onclick="exportCSV()">导出 CSV</button>
       </div>
     </div>
+
+    <!-- 提示说明移动到页面最底部 -->
+    <div class="card">
+      <div class="hint">
+        ✦ 默认 4 人，可以通过上方「－ / ＋」调整 2～8 人。<br>
+        ✦ 可以直接使用默认名字「玩家1~玩家N」，也可以自定义中文名字。<br>
+        ✦ 任意 N−1 人确认后，第 N 人自动算出，保证本局总和 = 0。<br>
+        ✦ 保存本局后自动累计总分，开始下一局；重置整场会清空所有数据与历史。
+      </div>
+    </div>
   </div>
 
   <script>
+    // ===== 预定义默认人名 =====
+    var defaultNames = [
+      "JINHUA",
+      "ZHOUKUN",
+      "MAJIAN",
+      "GUANGMING",
+      "MINNA",
+      "YA",
+      "BETTY",
+      "CAIFANG"
+    ];
+
     // ===== 全局状态 =====
     var playerCount = 4;  // 可动态调整 2 ~ 8
     var nameInputs = [];
+    var nameSelects = [];
     var scoreInputs = [];
     var confirmButtons = [];
     var scoreConfirmed = [];
@@ -314,6 +342,7 @@
       var row = document.getElementById("playersRow");
       row.innerHTML = "";
       nameInputs = [];
+      nameSelects = [];
       scoreInputs = [];
       confirmButtons = [];
 
@@ -322,13 +351,24 @@
           var col = document.createElement("div");
           col.className = "player-col";
 
-          // 姓名输入
+          // 默认名下拉选择
+          var sel = document.createElement("select");
+          sel.className = "name-select";
+          sel.id = "s" + (index + 1);
+          col.appendChild(sel);
+
+          // 手工输入名字
           var nameInput = document.createElement("input");
           nameInput.type = "text";
           nameInput.id = "n" + (index + 1);
           nameInput.className = "name-input";
-          nameInput.placeholder = "玩家" + (index + 1);
+          nameInput.placeholder = "玩家" + (index + 1) + "（可修改）";
           col.appendChild(nameInput);
+
+          // 当手工修改名字时，不强制同步，但更新一下选项显示
+          nameInput.addEventListener("input", function() {
+            // 自定义名字不影响默认名占用，只在确认时真正使用
+          });
 
           // 分数 + 上下按钮
           var scoreRow = document.createElement("div");
@@ -371,9 +411,61 @@
           row.appendChild(col);
 
           nameInputs.push(nameInput);
+          nameSelects.push(sel);
           scoreInputs.push(scoreInput);
           confirmButtons.push(btnConfirm);
+
+          // 下拉选择改变时，把默认名填进输入框，并刷新其它下拉选项
+          sel.onchange = function() {
+            if (sel.value) {
+              nameInput.value = sel.value;
+            }
+            updateNameOptions();
+          };
         })(i);
+      }
+
+      // 初始化下拉选项
+      updateNameOptions();
+    }
+
+    // 根据已经选中的默认人名，更新所有下拉菜单
+    function updateNameOptions() {
+      // 收集目前已经选中的默认名
+      var used = {};
+      for (var i = 0; i < nameSelects.length; i++) {
+        var val = nameSelects[i].value;
+        if (val) {
+          used[val] = true;
+        }
+      }
+
+      // 逐个下拉刷新选项
+      for (var j = 0; j < nameSelects.length; j++) {
+        var sel = nameSelects[j];
+        var current = sel.value;
+
+        // 重建 options
+        sel.innerHTML = "";
+        var optEmpty = document.createElement("option");
+        optEmpty.value = "";
+        optEmpty.textContent = "选择默认名…";
+        sel.appendChild(optEmpty);
+
+        for (var k = 0; k < defaultNames.length; k++) {
+          var name = defaultNames[k];
+          // 如果该名字已被其它玩家选中，则不再出现在列表中；
+          // 但保留给当前已经选中的玩家（避免刷新后选项丢失）
+          if (used[name] && name !== current) continue;
+
+          var opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          sel.appendChild(opt);
+        }
+
+        // 恢复当前选择（如果已被删除则退回空）
+        sel.value = current || "";
       }
     }
 
@@ -456,8 +548,8 @@
       if (scoreConfirmed[i]) return;
 
       var rawName = nameInputs[i].value.trim();
-      var defaultName = "玩家" + (i + 1);
-      var displayName = rawName || defaultName;
+      var defaultNameLabel = "玩家" + (i + 1);
+      var displayName = rawName || defaultNameLabel;
 
       var sStr = scoreInputs[i].value;
       if (!sStr) {
@@ -472,6 +564,9 @@
 
       nameInputs[i].readOnly = true;
       nameInputs[i].className = "name-input confirmed";
+      if (nameSelects[i]) {
+        nameSelects[i].disabled = true;
+      }
 
       scoreConfirmed[i] = true;
       scoreValues[i] = s;
@@ -512,6 +607,10 @@
           nameInputs[missing].readOnly = true;
           nameInputs[missing].className = "name-input confirmed";
           confirmButtons[missing].disabled = true;
+
+          if (nameSelects[missing]) {
+            nameSelects[missing].disabled = true;
+          }
 
           cnt = playerCount;
           sum = 0;
@@ -558,7 +657,7 @@
       updateNamesInHistoryHeader();
       updateFooterTotals();
 
-      // 开始下一局（姓名保留，总分保留）
+      // 开始下一局（姓名与总分保留，本局分数重置）
       for (var k = 0; k < playerCount; k++) {
         scoreConfirmed[k] = false;
         scoreValues[k] = 0;
