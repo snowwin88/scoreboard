@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>零和扑克牌计分器</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #f5f5f5;
+    }
+
+    /* ✅ 宽度自适应：不再限制为 600px */
+    .container {
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-size: 22px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-sizing: border-box;
+    }
+
+    /* 玩家人数调节行 */
+    .player-count-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #333;
+    }
+    .player-count-buttons {
+      display: flex;
+      gap: 6px;
+    }
+    .btn-small {
+      width: 32px;
+      padding: 2px 0;
+      font-size: 14px;
+      background: #e0e0e0;
+      color: #333;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* 玩家列：用 grid，自适应列数；页面宽了就都排一行 */
+    .players-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .player-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 0 4px 8px;
+      box-sizing: border-box;
+    }
+
+    .name-input {
+      width: 100%;
+      padding: 4px 6px;
+      font-size: 15px;
+      text-align: center;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      box-sizing: border-box;
+    }
+
+    /* 分数行：相对定位容器，三角按钮绝对定位在右侧 */
+    .score-row {
+      position: relative;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .score-input {
+      width: 100%;
+      padding: 6px 4px;
+      padding-right: 40px;   /* 给右侧三角按钮留空间 */
+      font-size: 18px;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    .arrow-col {
+      position: absolute;
+      right: 2px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .arrow-btn {
+      width: 32px;
+      height: 22px;
+      padding: 0;
+      font-size: 12px;
+      line-height: 1;
+      background: #007aff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button {
+      width: 100%;
+      padding: 6px 8px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      background: #007aff;
+      color: white;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+
+    button:disabled {
+      background: #bbb;
+      color: #666;
+      cursor: default;
+    }
+
+    .confirmed {
+      background: #f0f0f0;
+      font-weight: bold;
+      border-color: #bbb;
+    }
+
+    .sum {
+      font-size: 15px;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .btn-save {
+      background: #34c759;
+    }
+    .btn-reset {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .totals {
+      margin-top: 10px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .history {
+      margin-top: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 4px;
+      box-sizing: border-box;
+    }
+    th, td {
+      border: 1px solid #eee;
+      padding: 4px;
+      text-align: center;
+    }
+    th {
+      background: #fafafa;
+      font-weight: 600;
+    }
+
+    /* 底部总计行高亮背景 */
+    tfoot td {
+      background: #fff5cc;
+      font-weight: 700;
+      color: #333;
+      height: 26px;
+    }
+
+    /* 当前领先玩家在总计行中的高亮 */
+    .leader-cell {
+      background: #ffe08a;
+      color: #c62828;
+    }
+    /* 当前领先玩家在文字总分里的高亮 */
+    .leader-text {
+      color: #c62828;
+      font-weight: 700;
+    }
+
+    .btn-export {
+      margin-top: 8px;
+      background: #4b7bec;
+    }
+
+    .hint {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #666;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>零和扑克牌计分器</h1>
+
+    <!-- 本局输入 -->
+    <div class="card">
+
+      <!-- 玩家人数调节 -->
+      <div class="player-count-row">
+        <div>当前玩家人数：<span id="playerCountText">4</span></div>
+        <div class="player-count-buttons">
+          <button type="button" class="btn-small" onclick="changePlayerCount(-1)">－</button>
+          <button type="button" class="btn-small" onclick="changePlayerCount(1)">＋</button>
+        </div>
+      </div>
+
+      <!-- 动态玩家列 -->
+      <div id="playersRow" class="players-row"></div>
+
+      <div id="sumText" class="sum">当前已确认人数：0，本局总和：0</div>
+
+      <div class="btn-row">
+        <button class="btn-save" onclick="saveRound()">保存本局并开始下一局</button>
+        <button class="btn-reset" onclick="resetAll()">重置整场</button>
+      </div>
+
+      <div id="totalText" class="totals">
+        当前总分汇总：暂无（请先完成一局）
+      </div>
+
+      <div class="hint">
+        ✦ 默认 4 人，可以通过上方「－ / ＋」调整 2～8 人。<br>
+        ✦ 可以直接使用默认名字「玩家1~玩家N」，也可以自定义中文名字。<br>
+        ✦ 任意 N−1 人确认后，第 N 人自动算出，保证本局总和 = 0。<br>
+        ✦ 保存本局后自动累计总分，开始下一局；重置整场会清空所有数据与历史。
+      </div>
+    </div>
+
+    <!-- 历史记录 -->
+    <div class="card">
+      <div class="history">
+        <strong>历史每局分数</strong>
+        <table>
+          <thead>
+            <tr id="historyHeaderRow"></tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+          <tfoot>
+            <tr id="historyFooterRow"></tr>
+          </tfoot>
+        </table>
+
+        <button class="btn-export" onclick="exportCSV()">导出 CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== 全局状态 =====
+    var playerCount = 4;  // 可动态调整 2 ~ 8
+    var nameInputs = [];
+    var scoreInputs = [];
+    var confirmButtons = [];
+    var scoreConfirmed = [];
+    var scoreValues = [];
+    var totalScores = [];
+    var roundNumber = 0;
+
+    // ===== 初始化 / 重建 UI & 状态 =====
+    function initStateArrays() {
+      scoreConfirmed = [];
+      scoreValues = [];
+      totalScores = [];
+      for (var i = 0; i < playerCount; i++) {
+        scoreConfirmed.push(false);
+        scoreValues.push(0);
+        totalScores.push(0);
+      }
+    }
+
+    function buildPlayersUI() {
+      var row = document.getElementById("playersRow");
+      row.innerHTML = "";
+      nameInputs = [];
+      scoreInputs = [];
+      confirmButtons = [];
+
+      for (var i = 0; i < playerCount; i++) {
+        (function(index) {
+          var col = document.createElement("div");
+          col.className = "player-col";
+
+          // 姓名输入
+          var nameInput = document.createElement("input");
+          nameInput.type = "text";
+          nameInput.id = "n" + (index + 1);
+          nameInput.className = "name-input";
+          nameInput.placeholder = "玩家" + (index + 1);
+          col.appendChild(nameInput);
+
+          // 分数 + 上下按钮
+          var scoreRow = document.createElement("div");
+          scoreRow.className = "score-row";
+
+          var scoreInput = document.createElement("input");
+          scoreInput.type = "text";
+          scoreInput.id = "p" + (index + 1);
+          scoreInput.className = "score-input";
+          scoreInput.placeholder = "0";
+          scoreRow.appendChild(scoreInput);
+
+          var arrowCol = document.createElement("div");
+          arrowCol.className = "arrow-col";
+
+          var btnUp = document.createElement("button");
+          btnUp.type = "button";
+          btnUp.className = "arrow-btn";
+          btnUp.textContent = "▲";
+          btnUp.onclick = function() { stepScore(index, 1); };
+          arrowCol.appendChild(btnUp);
+
+          var btnDown = document.createElement("button");
+          btnDown.type = "button";
+          btnDown.className = "arrow-btn";
+          btnDown.textContent = "▼";
+          btnDown.onclick = function() { stepScore(index, -1); };
+          arrowCol.appendChild(btnDown);
+
+          scoreRow.appendChild(arrowCol);
+          col.appendChild(scoreRow);
+
+          // 确定按钮
+          var btnConfirm = document.createElement("button");
+          btnConfirm.id = "c" + (index + 1);
+          btnConfirm.textContent = "确定";
+          btnConfirm.onclick = function() { confirmPlayer(index); };
+          col.appendChild(btnConfirm);
+
+          row.appendChild(col);
+
+          nameInputs.push(nameInput);
+          scoreInputs.push(scoreInput);
+          confirmButtons.push(btnConfirm);
+        })(i);
+      }
+    }
+
+    function buildHistoryHeaderFooter() {
+      var headerRow = document.getElementById("historyHeaderRow");
+      var footerRow = document.getElementById("historyFooterRow");
+      headerRow.innerHTML = "";
+      footerRow.innerHTML = "";
+
+      // 表头
+      var thRound = document.createElement("th");
+      thRound.textContent = "局";
+      headerRow.appendChild(thRound);
+      for (var i = 0; i < playerCount; i++) {
+        var th = document.createElement("th");
+        th.id = "h" + (i + 1);
+        th.textContent = "玩家" + (i + 1);
+        headerRow.appendChild(th);
+      }
+
+      // 底部总计行
+      var tdLabel = document.createElement("td");
+      tdLabel.textContent = "总计";
+      footerRow.appendChild(tdLabel);
+      for (var j = 0; j < playerCount; j++) {
+        var td = document.createElement("td");
+        td.id = "t" + (j + 1);
+        td.textContent = "0";
+        footerRow.appendChild(td);
+      }
+    }
+
+    // ===== 基础工具函数 =====
+    function hasHistory() {
+      var tbody = document.getElementById("historyBody");
+      return tbody && tbody.children.length > 0;
+    }
+
+    function anyConfirmed() {
+      for (var i = 0; i < scoreConfirmed.length; i++) {
+        if (scoreConfirmed[i]) return true;
+      }
+      return false;
+    }
+
+    // 调整玩家人数
+    function changePlayerCount(delta) {
+      var newCount = playerCount + delta;
+      if (newCount < 2 || newCount > 8) {
+        alert("玩家人数必须在 2 到 8 人之间。");
+        return;
+      }
+      if (roundNumber > 0 || hasHistory() || anyConfirmed()) {
+        alert("如需更改玩家人数，请先点击「重置整场」。");
+        return;
+      }
+
+      playerCount = newCount;
+      document.getElementById("playerCountText").textContent = playerCount;
+
+      initStateArrays();
+      buildPlayersUI();
+      buildHistoryHeaderFooter();
+      updateFooterTotals();
+      document.getElementById("sumText").innerHTML =
+        "当前已确认人数：0，本局总和：0";
+      document.getElementById("totalText").textContent =
+        "当前总分汇总：暂无（请先完成一局）";
+    }
+
+    // 分数字步进
+    function stepScore(i, delta) {
+      if (scoreConfirmed[i]) return;
+      var v = Number(scoreInputs[i].value || 0);
+      scoreInputs[i].value = String(v + delta);
+    }
+
+    // 确认某玩家本局分数
+    function confirmPlayer(i) {
+      if (scoreConfirmed[i]) return;
+
+      var rawName = nameInputs[i].value.trim();
+      var defaultName = "玩家" + (i + 1);
+      var displayName = rawName || defaultName;
+
+      var sStr = scoreInputs[i].value;
+      if (!sStr) {
+        alert("请先输入「" + displayName + "」的分数再确定。");
+        return;
+      }
+      var s = Number(sStr);
+      if (isNaN(s)) {
+        alert("玩家「" + displayName + "」的分数必须是数字。");
+        return;
+      }
+
+      nameInputs[i].readOnly = true;
+      nameInputs[i].className = "name-input confirmed";
+
+      scoreConfirmed[i] = true;
+      scoreValues[i] = s;
+      scoreInputs[i].readOnly = true;
+      scoreInputs[i].className = "score-input confirmed";
+      confirmButtons[i].disabled = true;
+
+      updateRound();
+    }
+
+    // 更新当前局状态，必要时自动算最后一位
+    function updateRound() {
+      var cnt = 0;
+      var sum = 0;
+      for (var i = 0; i < playerCount; i++) {
+        if (scoreConfirmed[i]) {
+          cnt++;
+          sum += scoreValues[i];
+        }
+      }
+
+      // N-1 人确认 → 自动算第 N 人
+      if (cnt === playerCount - 1) {
+        var missing = -1;
+        for (var j = 0; j < playerCount; j++) {
+          if (!scoreConfirmed[j]) {
+            missing = j;
+            break;
+          }
+        }
+        if (missing !== -1) {
+          var autoValue = -sum;
+          scoreConfirmed[missing] = true;
+          scoreValues[missing] = autoValue;
+          scoreInputs[missing].value = String(autoValue);
+          scoreInputs[missing].readOnly = true;
+          scoreInputs[missing].className = "score-input confirmed";
+          nameInputs[missing].readOnly = true;
+          nameInputs[missing].className = "name-input confirmed";
+          confirmButtons[missing].disabled = true;
+
+          cnt = playerCount;
+          sum = 0;
+        }
+      }
+
+      document.getElementById("sumText").innerHTML =
+        "当前已确认人数：" + cnt + "，本局总和：" + sum;
+    }
+
+    // 保存本局并开始下一局
+    function saveRound() {
+      for (var i = 0; i < playerCount; i++) {
+        if (!scoreConfirmed[i]) {
+          alert("必须所有玩家都确认本局才能保存");
+          return;
+        }
+      }
+
+      roundNumber++;
+
+      // 更新总分
+      for (var i = 0; i < playerCount; i++) {
+        totalScores[i] += scoreValues[i];
+      }
+
+      // 写入历史记录
+      var tbody = document.getElementById("historyBody");
+      var tr = document.createElement("tr");
+
+      var tdRound = document.createElement("td");
+      tdRound.textContent = roundNumber;
+      tr.appendChild(tdRound);
+
+      for (var j = 0; j < playerCount; j++) {
+        var td2 = document.createElement("td");
+        td2.textContent = scoreValues[j];
+        tr.appendChild(td2);
+      }
+      tbody.appendChild(tr);
+
+      // 更新显示
+      updateTotalsText();
+      updateNamesInHistoryHeader();
+      updateFooterTotals();
+
+      // 开始下一局（姓名保留，总分保留）
+      for (var k = 0; k < playerCount; k++) {
+        scoreConfirmed[k] = false;
+        scoreValues[k] = 0;
+        scoreInputs[k].value = "";
+        scoreInputs[k].readOnly = false;
+        scoreInputs[k].className = "score-input";
+        confirmButtons[k].disabled = false;
+      }
+
+      document.getElementById("sumText").innerHTML =
+        "当前已确认人数：0，本局总和：0";
+    }
+
+    // 更新文字形式的总分汇总，并高亮领先者
+    function updateTotalsText() {
+      if (roundNumber === 0) {
+        document.getElementById("totalText").textContent =
+          "当前总分汇总：暂无（请先完成一局）";
+        return;
+      }
+
+      var max = Math.max.apply(null, totalScores);
+      var parts = [];
+      for (var i = 0; i < playerCount; i++) {
+        var name = nameInputs[i].value.trim() || ("玩家" + (i + 1));
+        var seg = name + "：" + totalScores[i];
+        if (totalScores[i] === max && max !== 0) {
+          seg = '<span class="leader-text">⭐ ' + seg + '</span>';
+        }
+        parts.push(seg);
+      }
+      document.getElementById("totalText").innerHTML =
+        "当前总分汇总： " + parts.join("； ");
+    }
+
+    // 更新历史表头中的玩家名字
+    function updateNamesInHistoryHeader() {
+      for (var i = 0; i < playerCount; i++) {
+        var name = nameInputs[i].value.trim() || ("玩家" + (i + 1));
+        var cell = document.getElementById("h" + (i + 1));
+        if (cell) cell.textContent = name;
+      }
+    }
+
+    // 更新底部总计行，并高亮总分最高的人
+    function updateFooterTotals() {
+      var max = Math.max.apply(null, totalScores);
+      for (var i = 0; i < playerCount; i++) {
+        var cell = document.getElementById("t" + (i + 1));
+        if (!cell) continue;
+        cell.textContent = totalScores[i];
+        cell.classList.remove("leader-cell");
+        if (totalScores[i] === max && max !== 0) {
+          cell.classList.add("leader-cell");
+        }
+      }
+    }
+
+    // 重置整场
+    function resetAll() {
+      roundNumber = 0;
+      document.getElementById("historyBody").innerHTML = "";
+
+      initStateArrays();
+      buildPlayersUI();
+      buildHistoryHeaderFooter();
+      updateFooterTotals();
+
+      document.getElementById("playerCountText").textContent = playerCount;
+      document.getElementById("sumText").innerHTML =
+        "当前已确认人数：0，本局总和：0";
+      document.getElementById("totalText").textContent =
+        "当前总分汇总：暂无（请先完成一局）";
+    }
+
+    // 导出历史记录为 CSV
+    function exportCSV() {
+      var rows = [];
+      // 表头：局 + 玩家姓名
+      var header = ["局"];
+      for (var i = 0; i < playerCount; i++) {
+        var name = nameInputs[i].value.trim() || ("玩家" + (i + 1));
+        header.push(name);
+      }
+      rows.push(header);
+
+      // 每局记录
+      var tbody = document.getElementById("historyBody");
+      var trList = tbody.getElementsByTagName("tr");
+      for (var r = 0; r < trList.length; r++) {
+        var tds = trList[r].getElementsByTagName("td");
+        if (tds.length === 0) continue;
+        var row = [];
+        for (var c = 0; c < tds.length; c++) {
+          row.push(tds[c].textContent);
+        }
+        rows.push(row);
+      }
+
+      // 总计一行
+      var summaryRow = ["总计"];
+      for (var j = 0; j < playerCount; j++) {
+        summaryRow.push(String(totalScores[j]));
+      }
+      rows.push(summaryRow);
+
+      // 转换为 CSV 字符串
+      function esc(v) {
+        var s = String(v);
+        if (s.indexOf('"') !== -1 || s.indexOf(',') !== -1 || s.indexOf('\n') !== -1) {
+          s = '"' + s.replace(/"/g, '""') + '"';
+        }
+        return s;
+      }
+      var csvContent = rows.map(function(row) {
+        return row.map(esc).join(",");
+      }).join("\r\n");
+
+      var blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "scores.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // ===== 页面初始化 =====
+    initStateArrays();
+    buildPlayersUI();
+    buildHistoryHeaderFooter();
+    updateFooterTotals();
+    document.getElementById("playerCountText").textContent = playerCount;
+  </script>
+</body>
+</html>
