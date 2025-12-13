@@ -24,6 +24,7 @@
       text-align: center;
       margin-bottom: 12px;
     }
+
     .card {
       background: #ffffff;
       border-radius: 12px;
@@ -58,7 +59,7 @@
 
     .players-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 10px;
       margin-bottom: 12px;
     }
@@ -84,6 +85,17 @@
 
     /* 隐藏：仅用于保存“当前玩家最终名字”，兼容你原逻辑 nameInputs[i].value */
     .name-input { display: none; }
+
+    /* ✅ 增强 #2：下拉框下面的小提示 */
+    .name-hint {
+      width: 100%;
+      margin-top: -4px;
+      font-size: 12px;
+      color: #2563eb;
+      line-height: 1.2;
+      display: none;
+      user-select: none;
+    }
 
     .score-row {
       position: relative;
@@ -113,6 +125,15 @@
       border-color: #cccccc;
     }
 
+    /* ✅ 增强 #3：自动补分淡入动画 */
+    .score-autofill {
+      animation: fadeIn 0.35s ease-out;
+    }
+    @keyframes fadeIn {
+      0% { opacity: 0.15; transform: translateY(2px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
     button {
       width: 100%;
       padding: 6px 8px;
@@ -124,12 +145,19 @@
       color: white;
       cursor: pointer;
       box-sizing: border-box;
+      transition: opacity 0.12s ease;
     }
 
     button:disabled {
       background: #bbb;
       color: #666;
       cursor: default;
+      opacity: 1;
+    }
+
+    /* ✅ 增强 #4：确认（全部）在“还缺最后一个名字”时半透明，但仍可点 */
+    .btn-soft {
+      opacity: 0.55;
     }
 
     .table-action-btn {
@@ -160,15 +188,8 @@
       flex-wrap: wrap;
     }
 
-    .btn-save {
-      background: #34c759;
-      flex: 1 1 180px;
-    }
-    .btn-reset {
-      background: #e0e0e0;
-      color: #333;
-      flex: 1 1 120px;
-    }
+    .btn-save { background: #34c759; flex: 1 1 180px; }
+    .btn-reset { background: #e0e0e0; color: #333; flex: 1 1 120px; }
 
     .totals { margin-top: 10px; }
     .history { margin-top: 10px; }
@@ -209,18 +230,18 @@
 
     /* ===== 历史表格：正负分颜色 ===== */
     .history-score-pos {
-      background: #e8f7ee;   /* 浅绿底 */
-      color: #16a34a;        /* 绿字 */
+      background: #e8f7ee;
+      color: #16a34a;
       font-weight: 700;
     }
     .history-score-neg {
-      background: #fdecec;   /* 浅红底 */
-      color: #dc2626;        /* 红字 */
+      background: #fdecec;
+      color: #dc2626;
       font-weight: 700;
     }
     .history-score-zero {
-      background: #f3f4f6;   /* 浅灰底 */
-      color: #374151;        /* 灰字 */
+      background: #f3f4f6;
+      color: #374151;
       font-weight: 600;
     }
 
@@ -230,35 +251,16 @@
     #summaryRow td.history-score-zero { background: #f3f4f6 !important; color: #374151 !important; }
 
     /* ===== 总分汇总：横向排名 + 大号分数 ===== */
-    .totals-title {
-      font-size: 14px;
-      margin-bottom: 4px;
-      color: #111827;
-    }
-    .totals-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: flex-end;
-    }
+    .totals-title { font-size: 14px; margin-bottom: 4px; color: #111827; }
+    .totals-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
     .total-item {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-      padding: 4px 8px;
-      border-radius: 10px;
-      background: #f3f4f6;
+      display: flex; align-items: baseline; gap: 6px;
+      padding: 4px 8px; border-radius: 10px; background: #f3f4f6;
     }
     .rank-badge {
-      display: inline-block;
-      min-width: 32px;
-      text-align: center;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: #facc15;
-      color: #111827;
-      font-weight: 700;
-      font-size: 14px;
+      display: inline-block; min-width: 32px; text-align: center;
+      padding: 2px 8px; border-radius: 999px;
+      background: #facc15; color: #111827; font-weight: 700; font-size: 14px;
     }
     .leader-rank { background: #f97316; color: #ffffff; }
     .player-name { font-size: 14px; min-width: 60px; }
@@ -269,24 +271,9 @@
     .leader-score { text-shadow: 0 0 3px rgba(198, 40, 40, 0.4); }
 
     /* ===== 趣味统计区域 ===== */
-    .stats-subtitle {
-      font-size: 13px;
-      font-weight: 600;
-      margin: 6px 0;
-      color: #111827;
-    }
-    .stats-flex {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: flex-start;
-    }
-    .stats-wins-list {
-      font-size: 13px;
-      line-height: 1.5;
-      min-width: 140px;
-      flex: 1;
-    }
+    .stats-subtitle { font-size: 13px; font-weight: 600; margin: 6px 0; color: #111827; }
+    .stats-flex { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+    .stats-wins-list { font-size: 13px; line-height: 1.5; min-width: 140px; flex: 1; }
     .stats-list { margin: 4px 0; padding-left: 18px; }
     .stats-list li { margin: 2px 0; }
     .stats-maxmin { font-size: 13px; line-height: 1.5; }
@@ -304,7 +291,6 @@
       display: none;
       min-width: 170px;
     }
-
     .keypad-title {
       font-size: 11px;
       color: #e5e7eb;
@@ -313,14 +299,12 @@
       justify-content: space-between;
       align-items: center;
     }
-
     .keypad-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 6px;
       margin-bottom: 6px;
     }
-
     .keypad-btn {
       padding: 8px 0;
       font-size: 18px;
@@ -331,14 +315,12 @@
       color: #f9fafb;
     }
     .keypad-btn:active { background: #374151; }
-
     .keypad-row-bottom {
       display: grid;
       grid-template-columns: 1.5fr 1.5fr 2fr;
       gap: 6px;
       margin-top: 4px;
     }
-
     .keypad-btn-func {
       padding: 6px 0;
       font-size: 13px;
@@ -349,23 +331,12 @@
       color: #f9fafb;
     }
     .keypad-btn-func:active { background: #6b7280; }
-
-    .keypad-btn-ok {
-      background: #10b981;
-      color: #fff;
-      font-weight: 600;
-    }
+    .keypad-btn-ok { background: #10b981; color: #fff; font-weight: 600; }
     .keypad-btn-ok:active { background: #059669; }
 
     /* ===== 趋势图 ===== */
-    .trend-title {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-
+    .trend-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
     .trend-container { margin-top: 6px; }
-
     .trend-legend {
       margin-top: 6px;
       display: flex;
@@ -373,18 +344,51 @@
       gap: 8px;
       font-size: 12px;
     }
+    .trend-legend-item { display: flex; align-items: center; gap: 4px; }
+    .trend-color-box { width: 10px; height: 10px; border-radius: 2px; }
 
-    .trend-legend-item {
-      display: flex;
-      align-items: center;
-      gap: 4px;
+    /* ===== 缺少玩家名时的高亮提示（蓝色+抖动） ===== */
+    .name-select.attention {
+      border-color: #007aff;
+      box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.35);
+      animation: shake 0.35s;
+    }
+    @keyframes shake {
+      0%   { transform: translateX(0); }
+      25%  { transform: translateX(-4px); }
+      50%  { transform: translateX(4px); }
+      75%  { transform: translateX(-3px); }
+      100% { transform: translateX(0); }
     }
 
-    .trend-color-box {
-      width: 10px;
-      height: 10px;
-      border-radius: 2px;
+    /* ===== 名字未齐：分数输入禁用样式 + 顶部提示条 ===== */
+    .score-input-disabled {
+      background: #f3f4f6;
+      color: #9ca3af;
+      border-color: #e5e7eb;
+      cursor: not-allowed;
     }
+
+    .name-gate-banner {
+      margin: 8px 0 4px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(0,122,255,0.10);
+      border: 1px solid rgba(0,122,255,0.25);
+      color: #1d4ed8;
+      font-size: 13px;
+      line-height: 1.35;
+      font-weight: 600;
+    }
+
+    .name-gate-banner.pulse {
+      animation: gatePulse 0.35s ease-out;
+    }
+    @keyframes gatePulse {
+      0% { transform: scale(0.98); opacity: 0.65; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
   </style>
 </head>
 
@@ -395,15 +399,16 @@
     <div class="card">
       <div class="player-count-row">
         <div>当前玩家人数：<span id="playerCountText">4</span></div>
-        <div class="player-count-buttons">
+        
+      <div id="nameGateBanner" class="name-gate-banner" style="display:none;">请先选择所有玩家名字后再输入分数</div>
+<div class="player-count-buttons">
           <button type="button" class="btn-small" onclick="changePlayerCount(-1)">－</button>
           <button type="button" class="btn-small" onclick="changePlayerCount(1)">＋</button>
         </div>
       </div>
 
       <div id="playersRow" class="players-row"></div>
-
-      <div id="sumText" class="sum">当前已确认人数：0，本局总和：0</div>
+<div id="sumText" class="sum">当前已确认人数：0，本局总和：0</div>
 
       <div class="btn-row">
         <button class="btn-save" onclick="saveRound()">保存本局并开始下一局</button>
@@ -475,6 +480,7 @@
     </div>
   </div>
 
+  <!-- 自定义数字键盘 -->
   <div id="customKeypad" class="keypad-overlay">
     <div class="keypad-title">
       <span>数字键盘</span>
@@ -538,6 +544,7 @@
     var playerCount = 4;
     var nameInputs = [];
     var nameSelects = [];
+    var nameHints = [];
     var scoreInputs = [];
     var confirmButtons = [];
 
@@ -561,7 +568,6 @@
 
     var trendVisible = [];
     var showAllHistory = false;
-
     function initStateArrays() {
       scoreConfirmed = [];
       scoreValues = [];
@@ -577,9 +583,64 @@
       }
 
       trendVisible = [];
-      for (var j = 0; j < playerCount; j++) trendVisible.push(true);
+      for (var j = 0; j < playerCount; j++) {
+        trendVisible.push(true);
+      }
     }
 
+    // ===== 名字就绪门禁：所有人名字未齐则禁止任何分数输入 =====
+    function areAllNamesReady() {
+      var missing = [];
+      for (var i = 0; i < playerCount; i++) {
+        var name = (nameInputs[i] && nameInputs[i].value) ? nameInputs[i].value.trim() : "";
+        if (!name) missing.push(i);
+      }
+      return { ok: missing.length === 0, missing: missing };
+    }
+
+    function highlightMissingNames(indices) {
+      for (var i = 0; i < indices.length; i++) {
+        highlightNameSelect(indices[i], "请先选择/输入所有玩家名字");
+      }
+      // 顶部提示条（更明显）
+      showNameGateBanner();
+      // 聚焦到第一个缺失项，减少“我该点哪里”的困惑
+      if (indices.length > 0 && nameSelects[indices[0]]) {
+        try { nameSelects[indices[0]].focus(); } catch(e) {}
+      }
+    }
+
+    function showNameGateBanner() {
+      var banner = document.getElementById("nameGateBanner");
+      if (!banner) return;
+      banner.style.display = "block";
+      banner.classList.remove("pulse");
+      void banner.offsetWidth;
+      banner.classList.add("pulse");
+      // 尽量让提示条保持可见（不强制滚动到底部）
+      var rect = banner.getBoundingClientRect();
+      if (rect.top < 0 || rect.top > window.innerHeight) {
+        banner.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }
+
+    function hideNameGateBanner() {
+      var banner = document.getElementById("nameGateBanner");
+      if (!banner) return;
+      banner.style.display = "none";
+    }
+
+    function updateScoreInputsEnabledUI() {
+      // 只要名字未齐 -> 所有人分数框禁用外观（但仍是 readOnly，我们通过 openKeypad 门禁拦截）
+      var ready = areAllNamesReady().ok;
+      for (var i = 0; i < scoreInputs.length; i++) {
+        if (!scoreInputs[i]) continue;
+        if (ready) scoreInputs[i].classList.remove("score-input-disabled");
+        else scoreInputs[i].classList.add("score-input-disabled");
+      }
+      if (ready) hideNameGateBanner();
+      else showNameGateBanner();
+    }
     function getUsedNames(exceptIndex) {
       var used = {};
       for (var i = 0; i < nameSelects.length; i++) {
@@ -632,11 +693,58 @@
       }
     }
 
+    function showNameHint(index, msg) {
+      var hint = nameHints[index];
+      if (!hint) return;
+      hint.textContent = msg || "请选择玩家名";
+      hint.style.display = "block";
+    }
+
+    function hideNameHint(index) {
+      var hint = nameHints[index];
+      if (!hint) return;
+      hint.style.display = "none";
+    }
+
+    function clearSelectAttention(index) {
+      var sel = nameSelects[index];
+      if (!sel) return;
+      sel.classList.remove("attention");
+      hideNameHint(index);
+    }
+
+    function highlightNameSelect(index, msg) {
+      var sel = nameSelects[index];
+      if (!sel) return;
+
+      // ✅ 增强 #1：只要用户准备操作（focus/mousedown/change）就清除提示（在监听器里做）
+      sel.classList.remove("attention");
+      void sel.offsetWidth; // reflow to retrigger animation
+      sel.classList.add("attention");
+
+      // ✅ 增强 #2：显示提示文字
+      showNameHint(index, msg || "请先选择玩家名（可选预设或自定义）");
+
+      sel.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function pulseAutoFillScore(index) {
+      var inp = scoreInputs[index];
+      if (!inp) return;
+      inp.classList.remove("score-autofill");
+      void inp.offsetWidth;
+      inp.classList.add("score-autofill");
+      setTimeout(function() {
+        inp.classList.remove("score-autofill");
+      }, 450);
+    }
+
     function buildPlayersUI() {
       var row = document.getElementById("playersRow");
       row.innerHTML = "";
       nameInputs = [];
       nameSelects = [];
+      nameHints = [];
       scoreInputs = [];
       confirmButtons = [];
 
@@ -648,6 +756,12 @@
           var sel = document.createElement("select");
           sel.className = "name-select";
           col.appendChild(sel);
+
+          // ✅ 增强 #2：小提示占位（默认隐藏）
+          var hint = document.createElement("div");
+          hint.className = "name-hint";
+          hint.textContent = "请选择玩家名";
+          col.appendChild(hint);
 
           var nameInput = document.createElement("input");
           nameInput.type = "text";
@@ -675,10 +789,18 @@
 
           nameInputs.push(nameInput);
           nameSelects.push(sel);
+          nameHints.push(hint);
           scoreInputs.push(scoreInput);
           confirmButtons.push(btnConfirm);
 
+          // ✅ 增强 #1：用户一碰下拉框就清理蓝色提示/抖动/文字
+          sel.addEventListener("focus", function() { clearSelectAttention(index); });
+          sel.addEventListener("mousedown", function() { clearSelectAttention(index); });
+          sel.addEventListener("click", function() { clearSelectAttention(index); });
+
           sel.onchange = function() {
+            clearSelectAttention(index);
+
             var v = (sel.value || "").trim();
 
             if (v === "__custom__") {
@@ -709,11 +831,12 @@
                 return;
               }
 
+              // 将自定义名字写入当前玩家
               var opt = document.createElement("option");
               opt.value = custom;
               opt.textContent = custom;
-
               sel.insertBefore(opt, sel.options[1] || null);
+
               sel.value = custom;
               nameInput.value = custom;
 
@@ -725,6 +848,8 @@
             }
 
             buildTrendLegend();
+            refreshInputLockState();
+            updateScoreInputsEnabledUI();
           };
         })(i);
       }
@@ -732,6 +857,7 @@
       updateNameOptions();
       refreshInputLockState();
       buildTrendLegend();
+      updateScoreInputsEnabledUI();
     }
 
     function buildHistoryHeaderFooter() {
@@ -810,10 +936,7 @@
         td.id = "t" + (j + 1);
         var v = Number(totalScores[j] || 0);
         td.textContent = v;
-
-        // ✅ 总计也按正/负/0 着色
         applyHistoryScoreClass(td, v);
-
         summaryRow.appendChild(td);
       }
 
@@ -842,10 +965,7 @@
             var tdScore = document.createElement("td");
             var val = Number((scores && scores[p] != null) ? scores[p] : 0);
             tdScore.textContent = val;
-
-            // ✅ 每局分数按正/负/0 着色
             applyHistoryScoreClass(tdScore, val);
-
             tr.appendChild(tdScore);
           }
 
@@ -892,6 +1012,7 @@
     function refreshInputLockState(changedIndex) {
       if (!scoreInputs || scoreInputs.length === 0) return;
 
+      // reset non-confirmed
       for (var i = 0; i < playerCount; i++) {
         if (!scoreConfirmed[i]) {
           scoreInputLocked[i] = false;
@@ -899,6 +1020,7 @@
           if (confirmButtons[i]) {
             confirmButtons[i].disabled = false;
             confirmButtons[i].textContent = "确定";
+            confirmButtons[i].classList.remove("btn-soft"); // reset soft style
           }
         }
       }
@@ -933,6 +1055,11 @@
         if (candidate !== null && confirmButtons[candidate]) {
           allConfirmIndex = candidate;
           confirmButtons[candidate].textContent = "确认（全部）";
+
+          // ✅ 增强 #4：如果最后一个玩家没选名字，则“确认（全部）”半透明但可点
+          var lastName = (nameInputs[lockedIdx] && nameInputs[lockedIdx].value) ? nameInputs[lockedIdx].value.trim() : "";
+          if (!lastName) confirmButtons[candidate].classList.add("btn-soft");
+          else confirmButtons[candidate].classList.remove("btn-soft");
         }
       }
     }
@@ -956,6 +1083,7 @@
       buildHistoryHeaderFooter();
       updateFooterTotals();
       refreshInputLockState();
+      updateScoreInputsEnabledUI();
       updateTotalsText();
       updateStatistics();
       resizeTrendCanvas();
@@ -976,7 +1104,7 @@
 
       var rawName = nameInputs[i].value.trim();
       if (!rawName) {
-        alert("请先为玩家选择一个名字（可选预设或自定义）。");
+        highlightNameSelect(i);
         return;
       }
 
@@ -996,23 +1124,29 @@
 
       scoreConfirmed[i] = true;
       scoreValues[i] = s;
+
       scoreInputs[i].classList.remove("score-input-active");
       scoreInputs[i].classList.remove("score-input-locked");
       scoreInputs[i].className = "score-input confirmed";
       scoreInputLocked[i] = false;
+
       confirmButtons[i].disabled = true;
+      confirmButtons[i].classList.remove("btn-soft");
 
       refreshInputLockState();
       updateRound();
     }
 
     function confirmAllPlayers() {
+      // Phase 1: validate & compute only
       var sumOthers = 0;
       var lastIndex = -1;
+      var toConfirm = [];
 
       for (var i = 0; i < playerCount; i++) {
         var vStr = (scoreInputs[i] && scoreInputs[i].value != null)
-          ? scoreInputs[i].value.trim() : "";
+          ? scoreInputs[i].value.trim()
+          : "";
 
         if (scoreConfirmed[i]) {
           sumOthers += Number(scoreValues[i] || 0);
@@ -1024,9 +1158,9 @@
           continue;
         }
 
-        var nm = nameInputs[i].value.trim();
+        var nm = (nameInputs[i] && nameInputs[i].value) ? nameInputs[i].value.trim() : "";
         if (!nm) {
-          alert("请先为第 " + (i+1) + " 位玩家选择名字（可选预设或自定义）。");
+          highlightNameSelect(i);
           return;
         }
 
@@ -1036,50 +1170,67 @@
           return;
         }
 
-        scoreConfirmed[i] = true;
-        scoreValues[i] = v;
+        toConfirm.push({ idx: i, val: v });
         sumOthers += v;
+      }
 
-        if (nameSelects[i]) nameSelects[i].disabled = true;
-
-        scoreInputs[i].classList.remove("score-input-active");
-        scoreInputs[i].classList.remove("score-input-locked");
-        scoreInputs[i].className = "score-input confirmed";
-        scoreInputLocked[i] = false;
-
-        if (confirmButtons[i]) {
-          confirmButtons[i].disabled = true;
-          confirmButtons[i].textContent = "确定";
+      if (lastIndex !== -1) {
+        var lastName = (nameInputs[lastIndex] && nameInputs[lastIndex].value)
+          ? nameInputs[lastIndex].value.trim()
+          : "";
+        if (!lastName) {
+          highlightNameSelect(lastIndex, "还差最后一步：请选择最后一位玩家名");
+          return;
         }
       }
 
-      if (lastIndex === -1) {
-        updateRound();
-        return;
+      // Phase 2: commit
+      for (var a = 0; a < toConfirm.length; a++) {
+        var item = toConfirm[a];
+        var idx = item.idx;
+        var v2 = item.val;
+
+        scoreConfirmed[idx] = true;
+        scoreValues[idx] = v2;
+
+        if (nameSelects[idx]) nameSelects[idx].disabled = true;
+
+        if (scoreInputs[idx]) {
+          scoreInputs[idx].classList.remove("score-input-active");
+          scoreInputs[idx].classList.remove("score-input-locked");
+          scoreInputs[idx].className = "score-input confirmed";
+        }
+        scoreInputLocked[idx] = false;
+
+        if (confirmButtons[idx]) {
+          confirmButtons[idx].disabled = true;
+          confirmButtons[idx].textContent = "确定";
+          confirmButtons[idx].classList.remove("btn-soft");
+        }
       }
 
-      if (!nameInputs[lastIndex].value.trim()) {
-        alert("请先为最后一位玩家选择名字（可选预设或自定义）。");
-        return;
-      }
+      // auto fill last one
+      if (lastIndex !== -1 && !scoreConfirmed[lastIndex]) {
+        var autoValue = -sumOthers;
+        scoreConfirmed[lastIndex] = true;
+        scoreValues[lastIndex] = autoValue;
 
-      var autoValue = -sumOthers;
-      scoreConfirmed[lastIndex] = true;
-      scoreValues[lastIndex] = autoValue;
+        if (scoreInputs[lastIndex]) {
+          scoreInputs[lastIndex].value = String(autoValue);
+          scoreInputs[lastIndex].classList.remove("score-input-active");
+          scoreInputs[lastIndex].classList.remove("score-input-locked");
+          scoreInputs[lastIndex].className = "score-input confirmed";
+          pulseAutoFillScore(lastIndex); // ✅ 增强 #3
+        }
+        scoreInputLocked[lastIndex] = false;
 
-      if (scoreInputs[lastIndex]) {
-        scoreInputs[lastIndex].value = String(autoValue);
-        scoreInputs[lastIndex].classList.remove("score-input-active");
-        scoreInputs[lastIndex].classList.remove("score-input-locked");
-        scoreInputs[lastIndex].className = "score-input confirmed";
-      }
-      scoreInputLocked[lastIndex] = false;
+        if (nameSelects[lastIndex]) nameSelects[lastIndex].disabled = true;
 
-      if (nameSelects[lastIndex]) nameSelects[lastIndex].disabled = true;
-
-      if (confirmButtons[lastIndex]) {
-        confirmButtons[lastIndex].disabled = true;
-        confirmButtons[lastIndex].textContent = "确定";
+        if (confirmButtons[lastIndex]) {
+          confirmButtons[lastIndex].disabled = true;
+          confirmButtons[lastIndex].textContent = "确定";
+          confirmButtons[lastIndex].classList.remove("btn-soft");
+        }
       }
 
       allConfirmIndex = null;
@@ -1097,6 +1248,7 @@
         }
       }
 
+      // 当 N-1 已确认，自动补最后一个（但如果最后一个名字未选 -> 仅提示，不提交）
       if (cnt === playerCount - 1) {
         var missing = -1;
         for (var j = 0; j < playerCount; j++) {
@@ -1104,9 +1256,12 @@
         }
         if (missing !== -1) {
           if (!nameInputs[missing].value.trim()) {
-            alert("请先为所有玩家选择名字（可选预设或自定义）。");
+            highlightNameSelect(missing, "还差最后一步：请选择最后一位玩家名");
+            document.getElementById("sumText").innerHTML =
+              "当前已确认人数：" + cnt + "，本局总和：" + sum + "（请先为最后一位玩家选择名字）";
             return;
           }
+
           var autoValue = -sum;
           scoreConfirmed[missing] = true;
           scoreValues[missing] = autoValue;
@@ -1115,6 +1270,7 @@
           scoreInputs[missing].classList.remove("score-input-active");
           scoreInputs[missing].classList.remove("score-input-locked");
           scoreInputs[missing].className = "score-input confirmed";
+          pulseAutoFillScore(missing); // ✅ 增强 #3
           scoreInputLocked[missing] = false;
 
           if (confirmButtons[missing]) confirmButtons[missing].disabled = true;
@@ -1132,7 +1288,7 @@
     function saveRound() {
       for (var i = 0; i < playerCount; i++) {
         if (!nameInputs[i].value.trim()) {
-          alert("请先为所有玩家选择名字（可选预设或自定义）。");
+          highlightNameSelect(i);
           return;
         }
         if (!scoreConfirmed[i]) {
@@ -1175,12 +1331,14 @@
         if (confirmButtons[k]) {
           confirmButtons[k].disabled = false;
           confirmButtons[k].textContent = "确定";
+          confirmButtons[k].classList.remove("btn-soft");
         }
         if (nameSelects[k]) nameSelects[k].disabled = false;
       }
 
       allConfirmIndex = null;
       refreshInputLockState();
+      updateScoreInputsEnabledUI();
       document.getElementById("sumText").innerHTML = "当前已确认人数：0，本局总和：0";
     }
 
@@ -1202,11 +1360,15 @@
         if (confirmButtons[i]) {
           confirmButtons[i].disabled = false;
           confirmButtons[i].textContent = "确定";
+          confirmButtons[i].classList.remove("btn-soft");
         }
         if (nameSelects[i]) nameSelects[i].disabled = false;
+
+        clearSelectAttention(i);
       }
 
       refreshInputLockState();
+      updateScoreInputsEnabledUI();
       document.getElementById("sumText").innerHTML = "当前已确认人数：0，本局总和：0";
     }
 
@@ -1234,8 +1396,11 @@
         if (confirmButtons[i]) {
           confirmButtons[i].disabled = false;
           confirmButtons[i].textContent = "确定";
+          confirmButtons[i].classList.remove("btn-soft");
         }
         if (nameSelects[i]) nameSelects[i].disabled = false;
+
+        clearSelectAttention(i);
       }
 
       allConfirmIndex = null;
@@ -1325,7 +1490,6 @@
       buildTrendLegend();
     }
 
-    /* ✅ 总计行严格按正/负/0 着色：不再叠加 leader-cell */
     function updateFooterTotals() {
       for (var i = 0; i < playerCount; i++) {
         var cell = document.getElementById("t" + (i + 1));
@@ -1627,6 +1791,7 @@
       buildHistoryHeaderFooter();
       updateFooterTotals();
       refreshInputLockState();
+      updateScoreInputsEnabledUI();
       updateTotalsText();
       updateStatistics();
       resizeTrendCanvas();
@@ -1677,7 +1842,17 @@
       URL.revokeObjectURL(url);
     }
 
+    // ===== 自定义数字键盘逻辑 =====
+    
     function openKeypad(index) {
+      // 🚨 门禁：任何人输入分数前，必须保证所有玩家名字已就绪
+      var check = areAllNamesReady();
+      if (!check.ok) {
+        highlightMissingNames(check.missing);
+        updateScoreInputsEnabledUI();
+        return;
+      }
+
       if (scoreConfirmed[index] || scoreInputLocked[index]) return;
       activeScoreIndex = index;
 
@@ -1713,6 +1888,7 @@
       keypad.style.left = left + "px";
       keypad.style.top = top + "px";
     }
+
 
     function closeKeypad() {
       var keypad = document.getElementById("customKeypad");
@@ -1780,11 +1956,13 @@
 
     window.addEventListener("resize", resizeTrendCanvas);
 
+    // ===== 页面初始化 =====
     initStateArrays();
     buildPlayersUI();
     buildHistoryHeaderFooter();
     updateFooterTotals();
     refreshInputLockState();
+    updateScoreInputsEnabledUI();
     updateTotalsText();
     updateStatistics();
     resizeTrendCanvas();
@@ -1792,4 +1970,5 @@
   </script>
 </body>
 </html>
+
 
