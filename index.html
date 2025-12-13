@@ -58,7 +58,7 @@
 
     .players-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 10px;
       margin-bottom: 12px;
     }
@@ -74,23 +74,16 @@
 
     .name-select {
       width: 100%;
-      padding: 4px 6px;
+      padding: 6px 8px;
       font-size: 14px;
-      border-radius: 6px;
+      border-radius: 8px;
       border: 1px solid #aaa;
       box-sizing: border-box;
       background: #fff;
     }
 
-    .name-input {
-      width: 100%;
-      padding: 4px 6px;
-      font-size: 15px;
-      text-align: center;
-      border-radius: 6px;
-      border: 1px solid #aaa;
-      box-sizing: border-box;
-    }
+    /* 隐藏：仅用于保存“当前玩家最终名字”，兼容你原逻辑 nameInputs[i].value */
+    .name-input { display: none; }
 
     .score-row {
       position: relative;
@@ -104,7 +97,7 @@
       font-size: 18px;
       text-align: center;
       border: 1px solid #ccc;
-      border-radius: 6px;
+      border-radius: 8px;
       box-sizing: border-box;
       background: #fff;
     }
@@ -126,7 +119,7 @@
       font-size: 14px;
       font-weight: 600;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       background: #007aff;
       color: white;
       cursor: pointer;
@@ -164,23 +157,21 @@
       display: flex;
       gap: 8px;
       margin-top: 10px;
+      flex-wrap: wrap;
     }
 
     .btn-save {
       background: #34c759;
+      flex: 1 1 180px;
     }
     .btn-reset {
       background: #e0e0e0;
       color: #333;
+      flex: 1 1 120px;
     }
 
-    .totals {
-      margin-top: 10px;
-    }
-
-    .history {
-      margin-top: 10px;
-    }
+    .totals { margin-top: 10px; }
+    .history { margin-top: 10px; }
 
     table {
       width: 100%;
@@ -199,6 +190,7 @@
       font-weight: 600;
     }
 
+    /* 总计行基础样式（不会覆盖我们后面更具体的红/绿/灰规则） */
     #summaryRow td {
       background: #fff5cc;
       font-weight: 700;
@@ -206,19 +198,7 @@
       height: 26px;
     }
 
-    .leader-cell {
-      background: #ffe08a !important;
-      color: #c62828;
-    }
-    .leader-text {
-      color: #c62828;
-      font-weight: 700;
-    }
-
-    .btn-export {
-      margin-top: 8px;
-      background: #4b7bec;
-    }
+    .btn-export { margin-top: 8px; background: #4b7bec; }
 
     .hint {
       margin-top: 4px;
@@ -227,20 +207,40 @@
       line-height: 1.4;
     }
 
+    /* ===== 历史表格：正负分颜色 ===== */
+    .history-score-pos {
+      background: #e8f7ee;   /* 浅绿底 */
+      color: #16a34a;        /* 绿字 */
+      font-weight: 700;
+    }
+    .history-score-neg {
+      background: #fdecec;   /* 浅红底 */
+      color: #dc2626;        /* 红字 */
+      font-weight: 700;
+    }
+    .history-score-zero {
+      background: #f3f4f6;   /* 浅灰底 */
+      color: #374151;        /* 灰字 */
+      font-weight: 600;
+    }
+
+    /* ✅ 总计行：强制按正/负/0 着色，避免被 #summaryRow 覆盖 */
+    #summaryRow td.history-score-pos { background: #e8f7ee !important; color: #16a34a !important; }
+    #summaryRow td.history-score-neg { background: #fdecec !important; color: #dc2626 !important; }
+    #summaryRow td.history-score-zero { background: #f3f4f6 !important; color: #374151 !important; }
+
     /* ===== 总分汇总：横向排名 + 大号分数 ===== */
     .totals-title {
       font-size: 14px;
       margin-bottom: 4px;
       color: #111827;
     }
-
     .totals-row {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       align-items: flex-end;
     }
-
     .total-item {
       display: flex;
       align-items: baseline;
@@ -249,7 +249,6 @@
       border-radius: 10px;
       background: #f3f4f6;
     }
-
     .rank-badge {
       display: inline-block;
       min-width: 32px;
@@ -261,34 +260,13 @@
       font-weight: 700;
       font-size: 14px;
     }
-
-    .leader-rank {
-      background: #f97316;
-      color: #ffffff;
-    }
-
-    .player-name {
-      font-size: 14px;
-      min-width: 60px;
-    }
-
-    .player-score {
-      font-size: 32px;
-      font-weight: 800;
-      color: #111827;
-    }
-    .player-score-positive {
-      color: #16a34a;
-    }
-    .player-score-negative {
-      color: #dc2626;
-    }
-    .player-score-zero {
-      color: #4b5563;
-    }
-    .leader-score {
-      text-shadow: 0 0 3px rgba(198, 40, 40, 0.4);
-    }
+    .leader-rank { background: #f97316; color: #ffffff; }
+    .player-name { font-size: 14px; min-width: 60px; }
+    .player-score { font-size: 32px; font-weight: 800; color: #111827; }
+    .player-score-positive { color: #16a34a; }
+    .player-score-negative { color: #dc2626; }
+    .player-score-zero { color: #4b5563; }
+    .leader-score { text-shadow: 0 0 3px rgba(198, 40, 40, 0.4); }
 
     /* ===== 趣味统计区域 ===== */
     .stats-subtitle {
@@ -297,34 +275,21 @@
       margin: 6px 0;
       color: #111827;
     }
-
     .stats-flex {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
       align-items: flex-start;
     }
-
     .stats-wins-list {
       font-size: 13px;
       line-height: 1.5;
       min-width: 140px;
       flex: 1;
     }
-
-    .stats-list {
-      margin: 4px 0;
-      padding-left: 18px;
-    }
-
-    .stats-list li {
-      margin: 2px 0;
-    }
-
-    .stats-maxmin {
-      font-size: 13px;
-      line-height: 1.5;
-    }
+    .stats-list { margin: 4px 0; padding-left: 18px; }
+    .stats-list li { margin: 2px 0; }
+    .stats-maxmin { font-size: 13px; line-height: 1.5; }
 
     /* ===== 自定义数字键盘 ===== */
     .keypad-overlay {
@@ -365,10 +330,7 @@
       background: #111827;
       color: #f9fafb;
     }
-
-    .keypad-btn:active {
-      background: #374151;
-    }
+    .keypad-btn:active { background: #374151; }
 
     .keypad-row-bottom {
       display: grid;
@@ -386,20 +348,14 @@
       background: #4b5563;
       color: #f9fafb;
     }
-
-    .keypad-btn-func:active {
-      background: #6b7280;
-    }
+    .keypad-btn-func:active { background: #6b7280; }
 
     .keypad-btn-ok {
       background: #10b981;
       color: #fff;
       font-weight: 600;
     }
-
-    .keypad-btn-ok:active {
-      background: #059669;
-    }
+    .keypad-btn-ok:active { background: #059669; }
 
     /* ===== 趋势图 ===== */
     .trend-title {
@@ -408,9 +364,7 @@
       margin-bottom: 6px;
     }
 
-    .trend-container {
-      margin-top: 6px;
-    }
+    .trend-container { margin-top: 6px; }
 
     .trend-legend {
       margin-top: 6px;
@@ -431,16 +385,14 @@
       height: 10px;
       border-radius: 2px;
     }
-
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>干瞪眼计分器</h1>
 
-    <!-- 本局输入 -->
     <div class="card">
-
       <div class="player-count-row">
         <div>当前玩家人数：<span id="playerCountText">4</span></div>
         <div class="player-count-buttons">
@@ -459,12 +411,9 @@
         <button class="btn-reset" onclick="resetAll()">重置整场</button>
       </div>
 
-      <div id="totalText" class="totals">
-        当前总分汇总：暂无（请先完成一局）
-      </div>
+      <div id="totalText" class="totals">当前总分汇总：暂无（请先完成一局）</div>
     </div>
 
-    <!-- 历史记录 -->
     <div class="card">
       <div class="history">
         <strong>历史每局分数（总计在最上方，最新一局在总计下面）</strong>
@@ -488,17 +437,14 @@
       </div>
     </div>
 
-    <!-- 总分趋势图（自适应宽度） -->
     <div class="card">
       <div class="trend-title">总分趋势图（X 轴：局数，Y 轴：累积总分）</div>
       <div class="trend-container">
-        <!-- 关键：不再写死 width，高度用 CSS；内部真实尺寸用 JS 动态设置 -->
         <canvas id="trendCanvas" style="width:100%; height:220px; display:block;"></canvas>
         <div id="trendLegend" class="trend-legend"></div>
       </div>
     </div>
 
-    <!-- 趣味统计 -->
     <div class="card">
       <strong>趣味统计</strong>
 
@@ -506,35 +452,29 @@
         <div class="stats-subtitle">1. 赢的次数统计（得分为正的局数）</div>
         <div class="stats-flex">
           <canvas id="statsPie" width="220" height="220" style="max-width:220px;"></canvas>
-          <div id="statsWinsList" class="stats-wins-list">
-            暂无数据（请先完成至少一局）。
-          </div>
+          <div id="statsWinsList" class="stats-wins-list">暂无数据（请先完成至少一局）。</div>
         </div>
       </div>
 
       <div class="stats-section" style="margin-top:10px;">
         <div class="stats-subtitle">2. 单局得分纪录</div>
-        <div id="statsMaxMin" class="stats-maxmin">
-          暂无数据（请先完成至少一局）。
-        </div>
+        <div id="statsMaxMin" class="stats-maxmin">暂无数据（请先完成至少一局）。</div>
       </div>
     </div>
 
-    <!-- 提示说明 -->
     <div class="card">
       <div class="hint">
         ✦ 默认 4 人，可以通过上方「－ / ＋」调整 2～8 人。<br>
-        ✦ 可以直接使用默认名字「玩家1~玩家N」，也可以自定义中文名字。<br>
+        ✦ 默认不选中任何玩家，显示「选择玩家…」。选择「自定义…」可输入名字并会显示在下拉框中。<br>
         ✦ 点击玩家分数框调出自定义数字键盘，默认输入为负数，如需正数可点击「±」。<br>
         ✦ 当有 N−1 个玩家已经输入分数后，最后一个玩家会自动锁定，不能手工输入；<br>
         ✦ 此时第 N−1 个完成输入的玩家按钮会变成「确认（全部）」，可一键提交本局；<br>
         ✦ 任意 N−1 人确认后，第 N 人自动算出，保证本局总和 = 0。<br>
-        ✦ 「重置本局」只清空当前局输入；「重置整场」会清空所有历史与总分。<br>
+        ✦ 「保存本局」只清空分数，不会清空玩家姓名；「重置整场」会清空所有历史与总分。<br>
       </div>
     </div>
   </div>
 
-  <!-- 自定义数字键盘 -->
   <div id="customKeypad" class="keypad-overlay">
     <div class="keypad-title">
       <span>数字键盘</span>
@@ -580,7 +520,6 @@
       });
     }
 
-    // 生成当前时间字符串 YYYY-MM-DD HH:mm:ss
     function getCurrentTimestamp() {
       var d = new Date();
       function pad(n) { return n < 10 ? "0" + n : "" + n; }
@@ -592,67 +531,104 @@
              pad(d.getSeconds());
     }
 
-    // ===== 预定义默认人名 =====
     var defaultNames = [
-      "JINHUA",
-      "ZHOUKUN",
-      "MAJIAN",
-      "GUANGMING",
-      "MINNA",
-      "YA",
-      "BETTY",
-      "VINCENT",
-      "CAIFANG"
+      "JINHUA","ZHOUKUN","MAJIAN","GUANGMING","MINNA","YA","BETTY","VINCENT","CAIFANG"
     ];
 
-    // ===== 全局状态 =====
     var playerCount = 4;
     var nameInputs = [];
     var nameSelects = [];
     var scoreInputs = [];
     var confirmButtons = [];
+
     var scoreConfirmed = [];
     var scoreValues = [];
     var totalScores = [];
     var roundNumber = 0;
 
-    // 历史数据：每局分数 + 时间
-    var historyData = [];   // 每项：数组 [p1Score, p2Score, ...]
-    var historyTimes = [];  // 每项：字符串时间
+    var historyData = [];
+    var historyTimes = [];
     var editingIndex = null;
 
     var activeScoreIndex = null;
     var scoreInputLocked = [];
     var allConfirmIndex = null;
 
-    // 饼图 / 趋势图颜色
     var pieColors = [
       "#f97316", "#3b82f6", "#10b981", "#e11d48",
       "#8b5cf6", "#0ea5e9", "#22c55e", "#facc15"
     ];
 
-    // 趋势图可见性
     var trendVisible = [];
-
-    // 历史记录显示模式：false = 只显示最近10局；true = 显示全部
     var showAllHistory = false;
 
-    // ===== 初始化 / 重建 UI & 状态 =====
     function initStateArrays() {
       scoreConfirmed = [];
       scoreValues = [];
       totalScores = [];
       scoreInputLocked = [];
       allConfirmIndex = null;
+
       for (var i = 0; i < playerCount; i++) {
         scoreConfirmed.push(false);
         scoreValues.push(0);
         totalScores.push(0);
         scoreInputLocked.push(false);
       }
+
       trendVisible = [];
-      for (var j = 0; j < playerCount; j++) {
-        trendVisible.push(true);
+      for (var j = 0; j < playerCount; j++) trendVisible.push(true);
+    }
+
+    function getUsedNames(exceptIndex) {
+      var used = {};
+      for (var i = 0; i < nameSelects.length; i++) {
+        if (i === exceptIndex) continue;
+        var v = (nameSelects[i].value || "").trim();
+        if (!v) continue;
+        if (v === "__custom__") continue;
+        used[v] = true;
+      }
+      return used;
+    }
+
+    function updateNameOptions() {
+      for (var j = 0; j < nameSelects.length; j++) {
+        var sel = nameSelects[j];
+        var current = (sel.value || "").trim();
+        var used = getUsedNames(j);
+
+        sel.innerHTML = "";
+
+        var optEmpty = document.createElement("option");
+        optEmpty.value = "";
+        optEmpty.textContent = "选择玩家…";
+        sel.appendChild(optEmpty);
+
+        if (current) {
+          var optCur = document.createElement("option");
+          optCur.value = current;
+          optCur.textContent = current;
+          sel.appendChild(optCur);
+        }
+
+        for (var k = 0; k < defaultNames.length; k++) {
+          var name = defaultNames[k];
+          if (name === current) continue;
+          if (used[name]) continue;
+
+          var opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          sel.appendChild(opt);
+        }
+
+        var optCustom = document.createElement("option");
+        optCustom.value = "__custom__";
+        optCustom.textContent = "自定义…";
+        sel.appendChild(optCustom);
+
+        sel.value = current || "";
       }
     }
 
@@ -671,14 +647,11 @@
 
           var sel = document.createElement("select");
           sel.className = "name-select";
-          sel.id = "s" + (index + 1);
           col.appendChild(sel);
 
           var nameInput = document.createElement("input");
           nameInput.type = "text";
-          nameInput.id = "n" + (index + 1);
           nameInput.className = "name-input";
-          nameInput.placeholder = "玩家" + (index + 1) + "（可修改）";
           col.appendChild(nameInput);
 
           var scoreRow = document.createElement("div");
@@ -686,19 +659,14 @@
 
           var scoreInput = document.createElement("input");
           scoreInput.type = "text";
-          scoreInput.id = "p" + (index + 1);
           scoreInput.className = "score-input";
           scoreInput.placeholder = "0";
           scoreInput.readOnly = true;
-          scoreInput.onclick = function() {
-            openKeypad(index);
-          };
-
+          scoreInput.onclick = function() { openKeypad(index); };
           scoreRow.appendChild(scoreInput);
           col.appendChild(scoreRow);
 
           var btnConfirm = document.createElement("button");
-          btnConfirm.id = "c" + (index + 1);
           btnConfirm.textContent = "确定";
           btnConfirm.onclick = function() { confirmPlayer(index); };
           col.appendChild(btnConfirm);
@@ -711,52 +679,59 @@
           confirmButtons.push(btnConfirm);
 
           sel.onchange = function() {
-            if (sel.value) {
-              nameInput.value = sel.value;
+            var v = (sel.value || "").trim();
+
+            if (v === "__custom__") {
+              var custom = prompt("请输入玩家名字：", "");
+              if (custom == null) {
+                sel.value = "";
+                nameInput.value = "";
+                updateNameOptions();
+                buildTrendLegend();
+                return;
+              }
+              custom = String(custom).trim();
+              if (!custom) {
+                sel.value = "";
+                nameInput.value = "";
+                updateNameOptions();
+                buildTrendLegend();
+                return;
+              }
+
+              var used = getUsedNames(index);
+              if (used[custom]) {
+                alert("名字「" + custom + "」已被其他玩家选择，请换一个。");
+                sel.value = "";
+                nameInput.value = "";
+                updateNameOptions();
+                buildTrendLegend();
+                return;
+              }
+
+              var opt = document.createElement("option");
+              opt.value = custom;
+              opt.textContent = custom;
+
+              sel.insertBefore(opt, sel.options[1] || null);
+              sel.value = custom;
+              nameInput.value = custom;
+
+              updateNameOptions();
+              sel.value = custom;
+            } else {
+              nameInput.value = v;
+              updateNameOptions();
             }
-            updateNameOptions();
+
             buildTrendLegend();
           };
-
-          nameInput.addEventListener("input", buildTrendLegend);
         })(i);
       }
 
       updateNameOptions();
       refreshInputLockState();
       buildTrendLegend();
-    }
-
-    function updateNameOptions() {
-      var used = {};
-      for (var i = 0; i < nameSelects.length; i++) {
-        var val = nameSelects[i].value;
-        if (val) {
-          used[val] = true;
-        }
-      }
-
-      for (var j = 0; j < nameSelects.length; j++) {
-        var sel = nameSelects[j];
-        var current = sel.value;
-
-        sel.innerHTML = "";
-        var optEmpty = document.createElement("option");
-        optEmpty.value = "";
-        optEmpty.textContent = "选择玩家…";
-        sel.appendChild(optEmpty);
-
-        for (var k = 0; k < defaultNames.length; k++) {
-          var name = defaultNames[k];
-          if (used[name] && name !== current) continue;
-          var opt = document.createElement("option");
-          opt.value = name;
-          opt.textContent = name;
-          sel.appendChild(opt);
-        }
-
-        sel.value = current || "";
-      }
     }
 
     function buildHistoryHeaderFooter() {
@@ -807,6 +782,13 @@
       renderHistoryTable();
     }
 
+    function applyHistoryScoreClass(td, val) {
+      td.classList.remove("history-score-pos", "history-score-neg", "history-score-zero");
+      if (val > 0) td.classList.add("history-score-pos");
+      else if (val < 0) td.classList.add("history-score-neg");
+      else td.classList.add("history-score-zero");
+    }
+
     function renderHistoryTable() {
       var tbody = document.getElementById("historyBody");
       if (!tbody) return;
@@ -826,30 +808,29 @@
       for (var j = 0; j < playerCount; j++) {
         var td = document.createElement("td");
         td.id = "t" + (j + 1);
-        td.textContent = totalScores[j] || 0;
+        var v = Number(totalScores[j] || 0);
+        td.textContent = v;
+
+        // ✅ 总计也按正/负/0 着色
+        applyHistoryScoreClass(td, v);
+
         summaryRow.appendChild(td);
       }
 
-      var tdBlank1 = document.createElement("td");
-      summaryRow.appendChild(tdBlank1);
-      var tdBlank2 = document.createElement("td");
-      summaryRow.appendChild(tdBlank2);
-
+      summaryRow.appendChild(document.createElement("td"));
+      summaryRow.appendChild(document.createElement("td"));
       tbody.appendChild(summaryRow);
 
       var totalRounds = historyData.length;
       var startIndex = 0;
-      if (!showAllHistory && totalRounds > 10) {
-        startIndex = totalRounds - 10;
-      }
+      if (!showAllHistory && totalRounds > 10) startIndex = totalRounds - 10;
 
       for (var i = totalRounds - 1; i >= startIndex; i--) {
         (function(idx) {
           var tr = document.createElement("tr");
 
-          var displayRound = idx + 1;
           var tdRound = document.createElement("td");
-          tdRound.textContent = displayRound;
+          tdRound.textContent = (idx + 1);
           tr.appendChild(tdRound);
 
           var tdTime2 = document.createElement("td");
@@ -859,7 +840,12 @@
           var scores = historyData[idx];
           for (var p = 0; p < playerCount; p++) {
             var tdScore = document.createElement("td");
-            tdScore.textContent = scores[p];
+            var val = Number((scores && scores[p] != null) ? scores[p] : 0);
+            tdScore.textContent = val;
+
+            // ✅ 每局分数按正/负/0 着色
+            applyHistoryScoreClass(tdScore, val);
+
             tr.appendChild(tdScore);
           }
 
@@ -889,26 +875,17 @@
     }
 
     function recalcTotalsFromHistory() {
-      for (var i = 0; i < playerCount; i++) {
-        totalScores[i] = 0;
-      }
+      for (var i = 0; i < playerCount; i++) totalScores[i] = 0;
       for (var r = 0; r < historyData.length; r++) {
         var scores = historyData[r];
         if (!scores) continue;
-        for (var j = 0; j < playerCount; j++) {
-          totalScores[j] += Number(scores[j] || 0);
-        }
+        for (var j = 0; j < playerCount; j++) totalScores[j] += Number(scores[j] || 0);
       }
     }
 
-    function hasHistory() {
-      return historyData.length > 0;
-    }
-
+    function hasHistory() { return historyData.length > 0; }
     function anyConfirmed() {
-      for (var i = 0; i < scoreConfirmed.length; i++) {
-        if (scoreConfirmed[i]) return true;
-      }
+      for (var i = 0; i < scoreConfirmed.length; i++) if (scoreConfirmed[i]) return true;
       return false;
     }
 
@@ -918,9 +895,7 @@
       for (var i = 0; i < playerCount; i++) {
         if (!scoreConfirmed[i]) {
           scoreInputLocked[i] = false;
-          if (scoreInputs[i]) {
-            scoreInputs[i].classList.remove("score-input-locked");
-          }
+          if (scoreInputs[i]) scoreInputs[i].classList.remove("score-input-locked");
           if (confirmButtons[i]) {
             confirmButtons[i].disabled = false;
             confirmButtons[i].textContent = "确定";
@@ -932,58 +907,27 @@
       var filledCount = 0;
       var emptyIndices = [];
       for (var k = 0; k < playerCount; k++) {
-        var v = (scoreInputs[k] && scoreInputs[k].value != null)
-          ? scoreInputs[k].value.trim()
-          : "";
-        if (v !== "") {
-          filledCount++;
-        } else {
-          emptyIndices.push(k);
-        }
+        var v = (scoreInputs[k] && scoreInputs[k].value != null) ? scoreInputs[k].value.trim() : "";
+        if (v !== "") filledCount++;
+        else emptyIndices.push(k);
       }
 
-      if (playerCount >= 2 &&
-          filledCount >= playerCount - 1 &&
-          emptyIndices.length === 1) {
-
+      if (playerCount >= 2 && filledCount >= playerCount - 1 && emptyIndices.length === 1) {
         var lockedIdx = emptyIndices[0];
 
         if (!scoreConfirmed[lockedIdx]) {
           scoreInputLocked[lockedIdx] = true;
-          if (scoreInputs[lockedIdx]) {
-            scoreInputs[lockedIdx].classList.add("score-input-locked");
-          }
-          if (confirmButtons[lockedIdx]) {
-            confirmButtons[lockedIdx].disabled = true;
-          }
+          if (scoreInputs[lockedIdx]) scoreInputs[lockedIdx].classList.add("score-input-locked");
+          if (confirmButtons[lockedIdx]) confirmButtons[lockedIdx].disabled = true;
         }
 
         var candidate = null;
-
         if (typeof changedIndex === "number" &&
-            changedIndex >= 0 &&
-            changedIndex < playerCount &&
+            changedIndex >= 0 && changedIndex < playerCount &&
             !scoreConfirmed[changedIndex]) {
-
           var cv = (scoreInputs[changedIndex] && scoreInputs[changedIndex].value != null)
-            ? scoreInputs[changedIndex].value.trim()
-            : "";
-          if (cv !== "" && changedIndex !== lockedIdx) {
-            candidate = changedIndex;
-          }
-        }
-
-        if (candidate === null &&
-            allConfirmIndex !== null &&
-            allConfirmIndex >= 0 &&
-            allConfirmIndex < playerCount &&
-            !scoreConfirmed[allConfirmIndex]) {
-          var pv = (scoreInputs[allConfirmIndex] && scoreInputs[allConfirmIndex].value != null)
-            ? scoreInputs[allConfirmIndex].value.trim()
-            : "";
-          if (pv !== "" && allConfirmIndex !== lockedIdx) {
-            candidate = allConfirmIndex;
-          }
+            ? scoreInputs[changedIndex].value.trim() : "";
+          if (cv !== "" && changedIndex !== lockedIdx) candidate = changedIndex;
         }
 
         if (candidate !== null && confirmButtons[candidate]) {
@@ -1015,10 +959,9 @@
       updateTotalsText();
       updateStatistics();
       resizeTrendCanvas();
-      document.getElementById("sumText").innerHTML =
-        "当前已确认人数：0，本局总和：0";
-      document.getElementById("totalText").textContent =
-        "当前总分汇总：暂无（请先完成一局）";
+
+      document.getElementById("sumText").innerHTML = "当前已确认人数：0，本局总和：0";
+      document.getElementById("totalText").textContent = "当前总分汇总：暂无（请先完成一局）";
     }
 
     function confirmPlayer(i) {
@@ -1032,25 +975,24 @@
       if (scoreConfirmed[i]) return;
 
       var rawName = nameInputs[i].value.trim();
-      var defaultNameLabel = "玩家" + (i + 1);
-      var displayName = rawName || defaultNameLabel;
+      if (!rawName) {
+        alert("请先为玩家选择一个名字（可选预设或自定义）。");
+        return;
+      }
 
       var sStr = scoreInputs[i].value;
       if (!sStr) {
-        alert("请先输入「" + displayName + "」的分数再确定。");
-        return;
-      }
-      var s = Number(sStr);
-      if (isNaN(s)) {
-        alert("玩家「" + displayName + "」的分数必须是数字。");
+        alert("请先输入「" + rawName + "」的分数再确定。");
         return;
       }
 
-      nameInputs[i].readOnly = true;
-      nameInputs[i].className = "name-input confirmed";
-      if (nameSelects[i]) {
-        nameSelects[i].disabled = true;
+      var s = Number(sStr);
+      if (isNaN(s)) {
+        alert("玩家「" + rawName + "」的分数必须是数字。");
+        return;
       }
+
+      if (nameSelects[i]) nameSelects[i].disabled = true;
 
       scoreConfirmed[i] = true;
       scoreValues[i] = s;
@@ -1070,8 +1012,7 @@
 
       for (var i = 0; i < playerCount; i++) {
         var vStr = (scoreInputs[i] && scoreInputs[i].value != null)
-          ? scoreInputs[i].value.trim()
-          : "";
+          ? scoreInputs[i].value.trim() : "";
 
         if (scoreConfirmed[i]) {
           sumOthers += Number(scoreValues[i] || 0);
@@ -1083,9 +1024,15 @@
           continue;
         }
 
+        var nm = nameInputs[i].value.trim();
+        if (!nm) {
+          alert("请先为第 " + (i+1) + " 位玩家选择名字（可选预设或自定义）。");
+          return;
+        }
+
         var v = Number(vStr);
         if (isNaN(v)) {
-          alert("玩家「" + (nameInputs[i].value.trim() || ("玩家" + (i+1))) + "」的分数无效。");
+          alert("玩家「" + nm + "」的分数无效。");
           return;
         }
 
@@ -1093,11 +1040,7 @@
         scoreValues[i] = v;
         sumOthers += v;
 
-        nameInputs[i].readOnly = true;
-        nameInputs[i].className = "name-input confirmed";
-        if (nameSelects[i]) {
-          nameSelects[i].disabled = true;
-        }
+        if (nameSelects[i]) nameSelects[i].disabled = true;
 
         scoreInputs[i].classList.remove("score-input-active");
         scoreInputs[i].classList.remove("score-input-locked");
@@ -1115,9 +1058,15 @@
         return;
       }
 
+      if (!nameInputs[lastIndex].value.trim()) {
+        alert("请先为最后一位玩家选择名字（可选预设或自定义）。");
+        return;
+      }
+
       var autoValue = -sumOthers;
       scoreConfirmed[lastIndex] = true;
       scoreValues[lastIndex] = autoValue;
+
       if (scoreInputs[lastIndex]) {
         scoreInputs[lastIndex].value = String(autoValue);
         scoreInputs[lastIndex].classList.remove("score-input-active");
@@ -1126,11 +1075,8 @@
       }
       scoreInputLocked[lastIndex] = false;
 
-      nameInputs[lastIndex].readOnly = true;
-      nameInputs[lastIndex].className = "name-input confirmed";
-      if (nameSelects[lastIndex]) {
-        nameSelects[lastIndex].disabled = true;
-      }
+      if (nameSelects[lastIndex]) nameSelects[lastIndex].disabled = true;
+
       if (confirmButtons[lastIndex]) {
         confirmButtons[lastIndex].disabled = true;
         confirmButtons[lastIndex].textContent = "确定";
@@ -1154,26 +1100,26 @@
       if (cnt === playerCount - 1) {
         var missing = -1;
         for (var j = 0; j < playerCount; j++) {
-          if (!scoreConfirmed[j]) {
-            missing = j;
-            break;
-          }
+          if (!scoreConfirmed[j]) { missing = j; break; }
         }
         if (missing !== -1) {
+          if (!nameInputs[missing].value.trim()) {
+            alert("请先为所有玩家选择名字（可选预设或自定义）。");
+            return;
+          }
           var autoValue = -sum;
           scoreConfirmed[missing] = true;
           scoreValues[missing] = autoValue;
+
           scoreInputs[missing].value = String(autoValue);
           scoreInputs[missing].classList.remove("score-input-active");
           scoreInputs[missing].classList.remove("score-input-locked");
           scoreInputs[missing].className = "score-input confirmed";
           scoreInputLocked[missing] = false;
-          nameInputs[missing].readOnly = true;
-          nameInputs[missing].className = "name-input confirmed";
-          confirmButtons[missing].disabled = true;
-          if (nameSelects[missing]) {
-            nameSelects[missing].disabled = true;
-          }
+
+          if (confirmButtons[missing]) confirmButtons[missing].disabled = true;
+          if (nameSelects[missing]) nameSelects[missing].disabled = true;
+
           cnt = playerCount;
           sum = 0;
         }
@@ -1185,6 +1131,10 @@
 
     function saveRound() {
       for (var i = 0; i < playerCount; i++) {
+        if (!nameInputs[i].value.trim()) {
+          alert("请先为所有玩家选择名字（可选预设或自定义）。");
+          return;
+        }
         if (!scoreConfirmed[i]) {
           alert("必须所有玩家都确认本局才能保存");
           return;
@@ -1192,9 +1142,7 @@
       }
 
       var currentScores = [];
-      for (var j = 0; j < playerCount; j++) {
-        currentScores.push(scoreValues[j]);
-      }
+      for (var j = 0; j < playerCount; j++) currentScores.push(scoreValues[j]);
 
       if (editingIndex !== null && editingIndex >= 0 && editingIndex < historyData.length) {
         historyData[editingIndex] = currentScores;
@@ -1219,6 +1167,7 @@
         scoreConfirmed[k] = false;
         scoreValues[k] = 0;
         scoreInputLocked[k] = false;
+
         if (scoreInputs[k]) {
           scoreInputs[k].value = "";
           scoreInputs[k].className = "score-input";
@@ -1227,18 +1176,12 @@
           confirmButtons[k].disabled = false;
           confirmButtons[k].textContent = "确定";
         }
-
-        nameInputs[k].readOnly = false;
-        nameInputs[k].className = "name-input";
-        if (nameSelects[k]) {
-          nameSelects[k].disabled = false;
-        }
+        if (nameSelects[k]) nameSelects[k].disabled = false;
       }
 
       allConfirmIndex = null;
       refreshInputLockState();
-      document.getElementById("sumText").innerHTML =
-        "当前已确认人数：0，本局总和：0";
+      document.getElementById("sumText").innerHTML = "当前已确认人数：0，本局总和：0";
     }
 
     function resetCurrentRound() {
@@ -1260,17 +1203,11 @@
           confirmButtons[i].disabled = false;
           confirmButtons[i].textContent = "确定";
         }
-
-        nameInputs[i].readOnly = false;
-        nameInputs[i].className = "name-input";
-        if (nameSelects[i]) {
-          nameSelects[i].disabled = false;
-        }
+        if (nameSelects[i]) nameSelects[i].disabled = false;
       }
 
       refreshInputLockState();
-      document.getElementById("sumText").innerHTML =
-        "当前已确认人数：0，本局总和：0";
+      document.getElementById("sumText").innerHTML = "当前已确认人数：0，本局总和：0";
     }
 
     function editRound(index) {
@@ -1298,12 +1235,7 @@
           confirmButtons[i].disabled = false;
           confirmButtons[i].textContent = "确定";
         }
-
-        nameInputs[i].readOnly = false;
-        nameInputs[i].className = "name-input";
-        if (nameSelects[i]) {
-          nameSelects[i].disabled = false;
-        }
+        if (nameSelects[i]) nameSelects[i].disabled = false;
       }
 
       allConfirmIndex = null;
@@ -1314,19 +1246,14 @@
 
     function deleteRound(index) {
       if (index < 0 || index >= historyData.length) return;
-      if (!confirm("确定要删除第 " + (index + 1) + " 局的记录吗？此操作不可撤销。")) {
-        return;
-      }
+      if (!confirm("确定要删除第 " + (index + 1) + " 局的记录吗？此操作不可撤销。")) return;
 
       historyData.splice(index, 1);
       historyTimes.splice(index, 1);
       roundNumber = historyData.length;
 
-      if (editingIndex === index) {
-        editingIndex = null;
-      } else if (editingIndex !== null && editingIndex > index) {
-        editingIndex--;
-      }
+      if (editingIndex === index) editingIndex = null;
+      else if (editingIndex !== null && editingIndex > index) editingIndex--;
 
       recalcTotalsFromHistory();
       renderHistoryTable();
@@ -1348,19 +1275,13 @@
       for (var i = 0; i < playerCount; i++) {
         var name = nameInputs[i].value.trim() || ("玩家" + (i + 1));
         var score = totalScores[i] || 0;
-        players.push({
-          index: i,
-          name: name,
-          score: score
-        });
+        players.push({ index: i, name: name, score: score });
       }
 
       var max = Math.max.apply(null, totalScores);
 
       players.sort(function (a, b) {
-        if (b.score !== a.score) {
-          return b.score - a.score;
-        }
+        if (b.score !== a.score) return b.score - a.score;
         return a.index - b.index;
       });
 
@@ -1374,25 +1295,14 @@
         var rankCls = "rank-badge";
         var scoreCls = "player-score";
 
-        if (p.score > 0) {
-          scoreCls += " player-score-positive";
-        } else if (p.score < 0) {
-          scoreCls += " player-score-negative";
-        } else {
-          scoreCls += " player-score-zero";
-        }
+        if (p.score > 0) scoreCls += " player-score-positive";
+        else if (p.score < 0) scoreCls += " player-score-negative";
+        else scoreCls += " player-score-zero";
 
         var isLeader = (p.score === max && max !== 0);
+        if (isLeader) { rankCls += " leader-rank"; scoreCls += " leader-score"; }
 
-        if (isLeader) {
-          rankCls += " leader-rank";
-          scoreCls += " leader-score";
-        }
-
-        var rankLabel = "#" + rank;
-        if (isLeader) {
-          rankLabel = "👑" + rank;
-        }
+        var rankLabel = isLeader ? ("👑" + rank) : ("#" + rank);
 
         html +=
           '<div class="total-item">' +
@@ -1415,20 +1325,17 @@
       buildTrendLegend();
     }
 
+    /* ✅ 总计行严格按正/负/0 着色：不再叠加 leader-cell */
     function updateFooterTotals() {
-      var max = Math.max.apply(null, totalScores);
       for (var i = 0; i < playerCount; i++) {
         var cell = document.getElementById("t" + (i + 1));
         if (!cell) continue;
-        cell.textContent = totalScores[i];
-        cell.classList.remove("leader-cell");
-        if (totalScores[i] === max && max !== 0) {
-          cell.classList.add("leader-cell");
-        }
+        var v = Number(totalScores[i] || 0);
+        cell.textContent = v;
+        applyHistoryScoreClass(cell, v);
       }
     }
 
-    // ===== 趣味统计：赢的次数 + 饼图（带玩家名、百分比、总次数） =====
     function updateStatistics() {
       var winsDiv = document.getElementById("statsWinsList");
       var maxMinDiv = document.getElementById("statsMaxMin");
@@ -1444,9 +1351,7 @@
       }
 
       var wins = [];
-      for (var i = 0; i < playerCount; i++) {
-        wins.push(0);
-      }
+      for (var i = 0; i < playerCount; i++) wins.push(0);
 
       var maxScore = null, maxPlayerIndex = null, maxRound = null;
       var minScore = null, minPlayerIndex = null, minRound = null;
@@ -1456,19 +1361,9 @@
         if (!scores) continue;
         for (var p = 0; p < playerCount; p++) {
           var val = Number(scores[p] || 0);
-          if (val > 0) {
-            wins[p] += 1;
-          }
-          if (maxScore === null || val > maxScore) {
-            maxScore = val;
-            maxPlayerIndex = p;
-            maxRound = r;
-          }
-          if (minScore === null || val < minScore) {
-            minScore = val;
-            minPlayerIndex = p;
-            minRound = r;
-          }
+          if (val > 0) wins[p] += 1;
+          if (maxScore === null || val > maxScore) { maxScore = val; maxPlayerIndex = p; maxRound = r; }
+          if (minScore === null || val < minScore) { minScore = val; minPlayerIndex = p; minRound = r; }
         }
       }
 
@@ -1477,11 +1372,7 @@
       var players = [];
       for (var j = 0; j < playerCount; j++) {
         var name = nameInputs[j].value.trim() || ("玩家" + (j + 1));
-        players.push({
-          index: j,
-          name: name,
-          wins: wins[j]
-        });
+        players.push({ index: j, name: name, wins: wins[j] });
       }
 
       players.sort(function(a, b) {
@@ -1498,21 +1389,13 @@
           if (pl.wins === 0) continue;
           var rank = k + 1;
           var pct = totalWins > 0 ? (pl.wins * 100 / totalWins) : 0;
-          listHtml +=
-            '<li>第 ' + rank + ' 名：' +
-              escapeHtml(pl.name) +
-              ' —— 赢了 ' + pl.wins + ' 次（' + pct.toFixed(1) + '%）' +
-            '</li>';
+          listHtml += '<li>第 ' + rank + ' 名：' + escapeHtml(pl.name) +
+                      ' —— 赢了 ' + pl.wins + ' 次（' + pct.toFixed(1) + '%）</li>';
         }
-        if (listHtml === '<ul class="stats-list">') {
-          listHtml = "目前还没有任何一局玩家得分为正。";
-        } else {
-          listHtml += '</ul>';
-        }
+        listHtml += '</ul>';
         winsDiv.innerHTML = listHtml;
       }
 
-      // 绘制饼图 + 在扇区上标注“姓名，百分比，总次数”
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       if (totalWins > 0) {
         var cx = canvas.width / 2;
@@ -1521,23 +1404,21 @@
         var startAngle = 0;
 
         for (var m = 0; m < players.length; m++) {
-          var pl = players[m];
-          if (pl.wins <= 0) continue;
+          var pl2 = players[m];
+          if (pl2.wins <= 0) continue;
 
-          var sliceAngle = (pl.wins / totalWins) * Math.PI * 2;
+          var sliceAngle = (pl2.wins / totalWins) * Math.PI * 2;
           var endAngle = startAngle + sliceAngle;
 
-          // 扇形
           ctx.beginPath();
           ctx.moveTo(cx, cy);
           ctx.arc(cx, cy, radius, startAngle, endAngle);
           ctx.closePath();
-          ctx.fillStyle = pieColors[pl.index % pieColors.length];
+          ctx.fillStyle = pieColors[pl2.index % pieColors.length];
           ctx.fill();
 
-          // 文字：姓名, 百分比, 次数
-          var pct = totalWins > 0 ? (pl.wins * 100 / totalWins) : 0;
-          var label = pl.name + "，" + pct.toFixed(1) + "%，" + pl.wins + "次";
+          var pct2 = (pl2.wins * 100 / totalWins);
+          var label = pl2.name + "，" + pct2.toFixed(1) + "%，" + pl2.wins + "次";
 
           var midAngle = startAngle + sliceAngle / 2;
           var textRadius = radius * 0.6;
@@ -1554,40 +1435,26 @@
         }
       }
 
-      var maxHtml = "";
-      var minHtml = "";
-
       if (maxScore === null) {
-        maxHtml = "单次最高得分：暂无记录。";
-        minHtml = "单次最低得分：暂无记录。";
+        maxMinDiv.innerHTML = "单次最高得分：暂无记录。<br>单次最低得分：暂无记录。";
       } else {
         var maxName = nameInputs[maxPlayerIndex].value.trim() || ("玩家" + (maxPlayerIndex + 1));
         var minName = nameInputs[minPlayerIndex].value.trim() || ("玩家" + (minPlayerIndex + 1));
-        var maxRoundNo = maxRound + 1;
-        var minRoundNo = minRound + 1;
-
-        maxHtml = "单次最高得分：<strong>" +
-          escapeHtml(maxName) + "</strong> 在第 <strong>" + maxRoundNo +
-          "</strong> 局，得分 <strong>" + maxScore + "</strong>。";
-
-        minHtml = "单次最低得分：<strong>" +
-          escapeHtml(minName) + "</strong> 在第 <strong>" + minRoundNo +
+        maxMinDiv.innerHTML =
+          "单次最高得分：<strong>" + escapeHtml(maxName) + "</strong> 在第 <strong>" + (maxRound+1) +
+          "</strong> 局，得分 <strong>" + maxScore + "</strong>。<br>" +
+          "单次最低得分：<strong>" + escapeHtml(minName) + "</strong> 在第 <strong>" + (minRound+1) +
           "</strong> 局，得分 <strong>" + minScore + "</strong>。";
       }
-
-      maxMinDiv.innerHTML = maxHtml + "<br>" + minHtml;
     }
 
-    // ===== 总分趋势图：图例 =====
     function buildTrendLegend() {
       var legend = document.getElementById("trendLegend");
       if (!legend) return;
       legend.innerHTML = "";
 
       for (var i = 0; i < playerCount; i++) {
-        if (trendVisible[i] === undefined) {
-          trendVisible[i] = true;
-        }
+        if (trendVisible[i] === undefined) trendVisible[i] = true;
         var name = nameInputs[i].value.trim() || ("玩家" + (i + 1));
         var color = pieColors[i % pieColors.length];
 
@@ -1618,7 +1485,6 @@
       }
     }
 
-    // ===== 总分趋势图：自适应宽度 =====
     function resizeTrendCanvas() {
       var canvas = document.getElementById("trendCanvas");
       if (!canvas) return;
@@ -1628,14 +1494,12 @@
       var parentWidth = parent.clientWidth;
       if (parentWidth <= 0) return;
 
-      // 设置内部绘图尺寸
       canvas.width = parentWidth;
       canvas.height = 220;
 
       updateTrendChart();
     }
 
-    // ===== 总分趋势图：绘制 =====
     function updateTrendChart() {
       var canvas = document.getElementById("trendCanvas");
       if (!canvas) return;
@@ -1666,22 +1530,11 @@
         series.push(arr);
       }
 
-      if (minY === null || maxY === null) {
-        ctx.fillStyle = "#666";
-        ctx.font = "12px -apple-system, BlinkMacSystemFont, system-ui";
-        ctx.fillText("暂无有效数据", 20, 30);
-        return;
-      }
+      if (minY === null || maxY === null) return;
 
       if (minY === maxY) {
-        if (minY === 0) {
-          minY = -10;
-          maxY = 10;
-        } else {
-          var pad = Math.abs(minY) * 0.2;
-          minY -= pad;
-          maxY += pad;
-        }
+        if (minY === 0) { minY = -10; maxY = 10; }
+        else { var pad = Math.abs(minY) * 0.2; minY -= pad; maxY += pad; }
       } else {
         var span = maxY - minY;
         var pad2 = span * 0.1;
@@ -1689,23 +1542,15 @@
         maxY += pad2;
       }
 
-      var paddingLeft = 40;
-      var paddingRight = 10;
-      var paddingTop = 20;
-      var paddingBottom = 30;
-
-      var w = canvas.width;
-      var h = canvas.height;
+      var paddingLeft = 40, paddingRight = 10, paddingTop = 20, paddingBottom = 30;
+      var w = canvas.width, h = canvas.height;
       var plotW = w - paddingLeft - paddingRight;
       var plotH = h - paddingTop - paddingBottom;
 
       function xForRound(rIndex) {
-        if (rounds === 1) {
-          return paddingLeft + plotW / 2;
-        }
+        if (rounds === 1) return paddingLeft + plotW / 2;
         return paddingLeft + (plotW * (rIndex / (rounds - 1)));
       }
-
       function yForValue(v) {
         return paddingTop + (maxY - v) * plotH / (maxY - minY);
       }
@@ -1721,8 +1566,8 @@
       ctx.fillStyle = "#555";
       ctx.font = "11px -apple-system, system-ui";
 
-      for (var r = 0; r < rounds; r++) {
-        var x = xForRound(r);
+      for (var rr = 0; rr < rounds; rr++) {
+        var x = xForRound(rr);
         var y = paddingTop + plotH;
         ctx.beginPath();
         ctx.moveTo(x, y);
@@ -1730,23 +1575,23 @@
         ctx.strokeStyle = "#ccc";
         ctx.stroke();
 
-        if ((r + 1) === 1 || (r + 1) === rounds || (rounds <= 10)) {
-          ctx.fillText((r + 1), x - 4, y + 14);
-        } else if ((r + 1) % Math.ceil(rounds / 5) === 0) {
-          ctx.fillText((r + 1), x - 4, y + 14);
+        if ((rr + 1) === 1 || (rr + 1) === rounds || (rounds <= 10)) {
+          ctx.fillText((rr + 1), x - 4, y + 14);
+        } else if ((rr + 1) % Math.ceil(rounds / 5) === 0) {
+          ctx.fillText((rr + 1), x - 4, y + 14);
         }
       }
 
       var steps = 5;
       for (var t = 0; t <= steps; t++) {
         var value = minY + (maxY - minY) * (t / steps);
-        var y = yForValue(value);
+        var yy = yForValue(value);
         ctx.beginPath();
-        ctx.moveTo(paddingLeft - 3, y);
-        ctx.lineTo(paddingLeft, y);
+        ctx.moveTo(paddingLeft - 3, yy);
+        ctx.lineTo(paddingLeft, yy);
         ctx.strokeStyle = "#ccc";
         ctx.stroke();
-        ctx.fillText(value.toFixed(0), 2, y + 3);
+        ctx.fillText(value.toFixed(0), 2, yy + 3);
       }
 
       ctx.lineWidth = 2;
@@ -1757,17 +1602,16 @@
 
         ctx.beginPath();
         for (var rIdx = 0; rIdx < rounds; rIdx++) {
-          var x = xForRound(rIdx);
-          var y = yForValue(data[rIdx]);
-          if (rIdx === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
+          var xx = xForRound(rIdx);
+          var yyy = yForValue(data[rIdx]);
+          if (rIdx === 0) ctx.moveTo(xx, yyy);
+          else ctx.lineTo(xx, yyy);
         }
         ctx.strokeStyle = pieColors[p % pieColors.length];
         ctx.stroke();
       }
     }
 
-    // ===== 重置整场 =====
     function resetAll() {
       roundNumber = 0;
       historyData = [];
@@ -1788,26 +1632,18 @@
       resizeTrendCanvas();
 
       document.getElementById("playerCountText").textContent = playerCount;
-      document.getElementById("sumText").innerHTML =
-        "当前已确认人数：0，本局总和：0";
-      document.getElementById("totalText").textContent =
-        "当前总分汇总：暂无（请先完成一局）";
+      document.getElementById("sumText").innerHTML = "当前已确认人数：0，本局总和：0";
+      document.getElementById("totalText").textContent = "当前总分汇总：暂无（请先完成一局）";
     }
 
-    // ===== 导出 CSV（全部局，含时间） =====
     function exportCSV() {
       var rows = [];
       var header = ["局", "时间"];
-      for (var i = 0; i < playerCount; i++) {
-        var name = nameInputs[i].value.trim() || ("玩家" + (i + 1));
-        header.push(name);
-      }
+      for (var i = 0; i < playerCount; i++) header.push(nameInputs[i].value.trim() || ("玩家" + (i + 1)));
       rows.push(header);
 
       var totalRow = ["总计", "—"];
-      for (var j = 0; j < playerCount; j++) {
-        totalRow.push(totalScores[j] || 0);
-      }
+      for (var j = 0; j < playerCount; j++) totalRow.push(totalScores[j] || 0);
       rows.push(totalRow);
 
       for (var r = 0; r < historyData.length; r++) {
@@ -1815,9 +1651,7 @@
         row.push(r + 1);
         row.push(historyTimes[r] || "");
         var scores = historyData[r];
-        for (var p = 0; p < playerCount; p++) {
-          row.push(scores[p]);
-        }
+        for (var p = 0; p < playerCount; p++) row.push(scores[p]);
         rows.push(row);
       }
 
@@ -1843,14 +1677,11 @@
       URL.revokeObjectURL(url);
     }
 
-    // ===== 自定义数字键盘逻辑 =====
     function openKeypad(index) {
       if (scoreConfirmed[index] || scoreInputLocked[index]) return;
       activeScoreIndex = index;
 
-      for (var i = 0; i < scoreInputs.length; i++) {
-        scoreInputs[i].classList.remove("score-input-active");
-      }
+      for (var i = 0; i < scoreInputs.length; i++) scoreInputs[i].classList.remove("score-input-active");
       var input = scoreInputs[index];
       input.classList.add("score-input-active");
 
@@ -1886,30 +1717,23 @@
     function closeKeypad() {
       var keypad = document.getElementById("customKeypad");
       keypad.style.display = "none";
-      for (var i = 0; i < scoreInputs.length; i++) {
-        scoreInputs[i].classList.remove("score-input-active");
-      }
+      for (var i = 0; i < scoreInputs.length; i++) scoreInputs[i].classList.remove("score-input-active");
       activeScoreIndex = null;
     }
 
     function keypadAppend(ch) {
       if (activeScoreIndex === null) return;
       if (scoreConfirmed[activeScoreIndex] || scoreInputLocked[activeScoreIndex]) return;
+
       var inp = scoreInputs[activeScoreIndex];
       var v = inp.value || "";
 
       if (ch === '-') {
-        if (v.startsWith("-")) {
-          v = v.slice(1);
-        } else {
-          v = "-" + v.replace(/-/g, "");
-        }
+        if (v.startsWith("-")) v = v.slice(1);
+        else v = "-" + v.replace(/-/g, "");
       } else {
-        if (v === "" || v === "-") {
-          v = "-" + ch;
-        } else {
-          v = v + ch;
-        }
+        if (v === "" || v === "-") v = "-" + ch;
+        else v = v + ch;
       }
 
       inp.value = v;
@@ -1921,9 +1745,7 @@
       if (scoreConfirmed[activeScoreIndex] || scoreInputLocked[activeScoreIndex]) return;
       var inp = scoreInputs[activeScoreIndex];
       var v = inp.value || "";
-      if (v.length > 0) {
-        v = v.slice(0, -1);
-      }
+      if (v.length > 0) v = v.slice(0, -1);
       inp.value = v;
       refreshInputLockState(activeScoreIndex);
     }
@@ -1940,11 +1762,8 @@
       if (scoreConfirmed[activeScoreIndex] || scoreInputLocked[activeScoreIndex]) return;
       var inp = scoreInputs[activeScoreIndex];
       var v = inp.value || "";
-      if (v.startsWith("-")) {
-        v = v.slice(1);
-      } else {
-        v = "-" + v.replace(/-/g, "");
-      }
+      if (v.startsWith("-")) v = v.slice(1);
+      else v = "-" + v.replace(/-/g, "");
       inp.value = v;
       refreshInputLockState(activeScoreIndex);
     }
@@ -1954,20 +1773,13 @@
       var clickedOnKeypad = keypad.contains(e.target);
       var clickedOnScore = false;
       for (var i = 0; i < scoreInputs.length; i++) {
-        if (scoreInputs[i] === e.target) {
-          clickedOnScore = true;
-          break;
-        }
+        if (scoreInputs[i] === e.target) { clickedOnScore = true; break; }
       }
-      if (!clickedOnKeypad && !clickedOnScore) {
-        closeKeypad();
-      }
+      if (!clickedOnKeypad && !clickedOnScore) closeKeypad();
     });
 
-    // ===== 自适应趋势图：窗口大小变化时重绘 =====
     window.addEventListener("resize", resizeTrendCanvas);
 
-    // ===== 页面初始化 =====
     initStateArrays();
     buildPlayersUI();
     buildHistoryHeaderFooter();
@@ -1975,8 +1787,9 @@
     refreshInputLockState();
     updateTotalsText();
     updateStatistics();
-    resizeTrendCanvas();  // 初始化时自适应一次
+    resizeTrendCanvas();
     document.getElementById("playerCountText").textContent = playerCount;
   </script>
 </body>
 </html>
+
