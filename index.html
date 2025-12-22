@@ -389,6 +389,116 @@
       100% { transform: scale(1); opacity: 1; }
     }
 
+    /* ===== 彩蛋功能样式 ===== */
+    .easter-egg {
+      display: inline-block;
+      margin-left: 8px;
+      font-size: 20px;
+      cursor: pointer;
+      animation: blink 0.8s ease-in-out infinite;
+      transition: transform 0.2s;
+    }
+    .easter-egg:hover {
+      transform: scale(1.3) rotate(15deg);
+      animation: blink 0.4s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%, 49%, 100% { opacity: 1; }
+      50%, 99% { opacity: 0.3; }
+    }
+
+    /* 模态框样式 */
+    .egg-modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      animation: fadeInModal 0.3s ease-out;
+    }
+    @keyframes fadeInModal {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .egg-modal-content {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 20px;
+      padding: 30px 20px;
+      max-width: 90%;
+      width: 360px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      position: relative;
+      animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    @keyframes bounceIn {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.05); }
+      70% { transform: scale(0.9); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .egg-modal-close {
+      position: absolute;
+      top: 10px; right: 15px;
+      font-size: 28px;
+      color: white;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      line-height: 1;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    .egg-modal-close:hover { opacity: 1; }
+
+    .dancing-character {
+      text-align: center;
+      font-size: 80px;
+      margin: 20px 0;
+      animation: dance 1s ease-in-out infinite;
+    }
+    @keyframes dance {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-15px) rotate(-10deg); }
+      50% { transform: translateY(0) rotate(0deg); }
+      75% { transform: translateY(-15px) rotate(10deg); }
+    }
+
+    .egg-message {
+      color: white;
+      font-size: 16px;
+      line-height: 1.6;
+      text-align: center;
+      margin-top: 15px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      font-weight: 500;
+    }
+
+    .egg-player-name {
+      color: #ffd700;
+      font-size: 20px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #f0f;
+      animation: confettiFall 3s linear infinite;
+    }
+    @keyframes confettiFall {
+      to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+    }
+
   </style>
 </head>
 
@@ -414,7 +524,16 @@
         <button class="btn-save" onclick="saveRound()">保存本局并开始下一局</button>
         <button class="btn-reset" onclick="resetCurrentRound()">重置本局</button>
         <button class="btn-reset" onclick="resetAll()">重置整场</button>
+        <button id="speechToggleBtn" class="btn-reset" style="background:#4caf50;" onclick="toggleSpeech()" title="开始播报">▶ 开始播报</button>
       </div>
+      <div style="margin-top:10px;text-align:center;">
+        <label style="font-size:14px;cursor:pointer;user-select:none;">
+          <input type="checkbox" id="autoPlayCheckbox" onchange="toggleAutoPlay()" style="cursor:pointer;margin-right:5px;">
+          <span>自动播放</span>
+        </label>
+        <span style="font-size:12px;color:#666;margin-left:8px;">(保存本局和点击彩蛋时自动语音播报)</span>
+      </div>
+      <div id="speakStatus" style="font-size:12px;color:#666;margin-top:6px;text-align:center;"></div>
 
       <div id="totalText" class="totals">当前总分汇总：暂无（请先完成一局）</div>
     </div>
@@ -477,6 +596,16 @@
         ✦ 任意 N−1 人确认后，第 N 人自动算出，保证本局总和 = 0。<br>
         ✦ 「保存本局」只清空分数，不会清空玩家姓名；「重置整场」会清空所有历史与总分。<br>
       </div>
+    </div>
+  </div>
+
+  <!-- 彩蛋模态框 -->
+  <div id="eggModal" class="egg-modal" onclick="closeEggModal(event)">
+    <div class="egg-modal-content" onclick="event.stopPropagation()">
+      <button class="egg-modal-close" onclick="closeEggModal()">&times;</button>
+      <div id="eggPlayerName" class="egg-player-name"></div>
+      <div class="dancing-character" id="dancingChar">🎉</div>
+      <div id="eggMessage" class="egg-message"></div>
     </div>
   </div>
 
@@ -565,6 +694,402 @@
       "#f97316", "#3b82f6", "#10b981", "#e11d48",
       "#8b5cf6", "#0ea5e9", "#22c55e", "#facc15"
     ];
+
+    // 存储最后一次的播报文本
+    var lastRoundText = "";
+    var lastTotalText = "";
+    var isSpeaking = false; // 播报状态
+    var autoPlayEnabled = false; // 自动播放开关，默认关闭
+    var selectedVoice = null; // 选中的语音引擎
+    var availableVoices = []; // 可用的语音列表
+
+    // 初始化语音引擎
+    function initVoices() {
+      availableVoices = speechSynthesis.getVoices();
+      
+      // 优先级列表：选择最自然的中文语音
+      var voicePriority = [
+        'Tingting',           // 中文（中国大陆）- 质量较好
+        'Yaoyao',             // 中文（中国大陆）
+        'Xiaoyi',             // 中文（中国大陆）
+        'Microsoft Yunxi',    // Edge浏览器的高质量中文语音
+        'Microsoft Xiaoxiao', // Edge浏览器
+        'Microsoft Kangkang', // Edge浏览器（男声）
+        'Google 普通话',      // Google中文
+        'zh-CN',              // 通用中文标识
+        'zh-TW',              // 中文（台湾）
+        'Chinese'             // 通用中文
+      ];
+      
+      // 尝试按优先级查找最佳语音
+      for (var i = 0; i < voicePriority.length; i++) {
+        var priorityName = voicePriority[i];
+        for (var j = 0; j < availableVoices.length; j++) {
+          var voice = availableVoices[j];
+          if (voice.name.indexOf(priorityName) !== -1 || voice.lang.indexOf('zh') !== -1) {
+            selectedVoice = voice;
+            console.log('已选择语音引擎：' + voice.name + ' (' + voice.lang + ')');
+            return;
+          }
+        }
+      }
+      
+      // 如果没找到中文语音，使用默认的第一个
+      if (availableVoices.length > 0) {
+        selectedVoice = availableVoices[0];
+        console.log('使用默认语音：' + selectedVoice.name);
+      }
+    }
+
+    // 优化播报文本，添加自然停顿
+    function optimizeTextForSpeech(text) {
+      // 在逗号、顿号后添加短停顿
+      text = text.replace(/，/g, '，、');
+      text = text.replace(/：/g, '：、、');
+      // 在数字前后添加微停顿，使数字读得更清楚
+      text = text.replace(/(\d+)/g, ' $1 ');
+      return text;
+    }
+
+    // 更新播报按钮状态
+    function updateSpeechButton(speaking) {
+      var btn = document.getElementById('speechToggleBtn');
+      if (!btn) return;
+      
+      isSpeaking = speaking;
+      if (speaking) {
+        btn.innerHTML = '⏹ 停止播报';
+        btn.style.background = '#e74c3c';
+        btn.title = '停止语音播报';
+      } else {
+        btn.innerHTML = '▶ 开始播报';
+        btn.style.background = '#4caf50';
+        btn.title = '开始播报';
+      }
+    }
+
+    // 切换播报状态
+    function toggleSpeech() {
+      if (isSpeaking) {
+        // 当前正在播报，停止它
+        speechSynthesis.cancel();
+        updateSpeechButton(false);
+      } else {
+        // 当前没有播报，开始播报
+        if (!lastRoundText || !lastTotalText) {
+          alert("暂无播报记录，请先完成一局游戏。");
+          return;
+        }
+        replayLastSpeech();
+      }
+    }
+
+    // 切换自动播放开关
+    function toggleAutoPlay() {
+      autoPlayEnabled = !autoPlayEnabled;
+      var checkbox = document.getElementById('autoPlayCheckbox');
+      if (checkbox) {
+        checkbox.checked = autoPlayEnabled;
+      }
+      // 保存设置到localStorage
+      try {
+        localStorage.setItem('scoreboard_autoplay', autoPlayEnabled ? '1' : '0');
+      } catch(e) {}
+    }
+
+    // 彩蛋功能：胜利者文字库（30字以内）
+    var winnerMessages = [
+      "恭喜你！稳坐榜首！这波操作太6了，继续保持领先优势！",
+      "真是太厉害了！你就是今天的王者，所有人都要仰望你！",
+      "第一名的感觉是不是很爽？享受这份荣耀吧，你值得拥有！",
+      "无人能挡！你的实力有目共睹，继续称霸赛场！",
+      "站在巅峰的感觉如何？保持状态，让他们望尘莫及！",
+      "你就是传说中的高手！这局赢得漂亮，气势如虹！",
+      "遥遥领先！你的技术让对手们瑟瑟发抖！",
+      "王者降临！你用实力证明了什么叫真正的强者！",
+      "太精彩了！你的每一步都堪称教科书级别的操作！",
+      "稳如泰山！你的领先优势让人高山仰止！",
+      "霸气侧漏！第一名的宝座为你而设，实至名归！",
+      "无敌是多么寂寞！冠军的光环在你头上闪耀！",
+      "神级发挥！这场胜利写下了你的传奇篇章！",
+      "势不可挡！你的优势已经让对手们绝望了！",
+      "完美！你用实力诠释了什么叫做真正的冠军！",
+      "强势领跑！你的背影是最美的风景线！",
+      "登峰造极！这个第一名含金量十足！",
+      "所向披靡！继续这样，冠军非你莫属！",
+      "天秀操作！你已经把第一名坐稳了！",
+      "无懈可击！你的表现让所有人叹为观止！",
+      "霸榜了！第一名的位置就是你的专属座位！",
+      "实力碾压！对手在你面前都是浮云！",
+      "高手风范！你的每一步都透露着王者气息！",
+      "狂飙突进！你的领先优势越来越大了！",
+      "独领风骚！第一名的荣耀属于你！",
+      "势如破竹！没人能阻挡你前进的步伐！",
+      "君临天下！你就是这个游戏的主宰者！",
+      "光芒万丈！你的实力照亮了整个赛场！",
+      "一骑绝尘！其他人只能望你项背！",
+      "巅峰状态！你现在的表现堪称完美！",
+      "王者归来！这个第一名实至名归！",
+      "强者恒强！继续保持，胜利属于你！",
+      "震撼全场！你的表现让所有人惊叹！",
+      "傲视群雄！你就是今天最亮的星！",
+      "气势如虹！冠军的气质展露无遗！",
+      "睥睨天下！第一名的威风无人能及！",
+      "横扫千军！你的实力让对手无地自容！",
+      "独步天下！这个第一名你当之无愧！",
+      "盖世无双！你的表现已经封神了！",
+      "一鸣惊人！第一名的桂冠为你戴上！",
+      "技压群芳！你的水平已经超凡脱俗！",
+      "豪气冲天！冠军就该有你这样的气势！",
+      "力压群雄！第一名的宝座稳如磐石！",
+      "风华绝代！你的表现将载入史册！",
+      "卓尔不群！你的实力高出一个档次！",
+      "叱咤风云！第一名的光环照耀全场！",
+      "纵横无敌！你已经站在了巅峰之巅！",
+      "雄霸天下！冠军之路为你铺就！",
+      "威震四方！你的名字将铭刻在第一名榜上！",
+      "气吞山河！这样的霸气只有冠军才有！"
+    ];
+
+    // 彩蛋功能：落后者文字库（30字以内）
+    var loserMessages = [
+      "暂时落后不要紧！卧薪尝胆，下一局必定王者归来！",
+      "越挫越勇！相信自己，绝地反击的时刻即将到来！",
+      "别灰心！塞翁失马焉知非福，逆风翻盘才最精彩！",
+      "失败是成功之母！总结经验，下局打他们个措手不及！",
+      "不服输的精神最可贵！蓄势待发，反超就在眼前！",
+      "这只是开始！真正的高手从不轻言放弃，加油！",
+      "莫慌！风水轮流转，下一个胜者就是你！",
+      "暂时殿后，但志在必得！反击的号角已经吹响！",
+      "困境造就英雄！你的逆袭故事正在上演！",
+      "输了一局不算什么！笑到最后的才是真正的赢家！",
+      "千里之行始于足下！从现在开始，每一步都是逆袭！",
+      "暂居末位不可怕！可怕的是失去斗志，加油！",
+      "低谷是暂时的！坚持下去，曙光就在前方！",
+      "不经历风雨怎见彩虹！你的胜利在路上！",
+      "跌倒了就爬起来！真正的勇士从不言败！",
+      "最后一名也有春天！绝地反击就是现在！",
+      "暂时的失利换来宝贵经验！下局必定翻盘！",
+      "别急！好戏总在后头，你的精彩即将上演！",
+      "落后不代表失败！坚持就是胜利的开始！",
+      "塞翁失马焉知非福！这只是成功前的磨砺！",
+      "绝境中见真章！你的反击时刻到了！",
+      "暂时垫底没关系！冲上来才更有成就感！",
+      "不抛弃不放弃！逆风翻盘的故事由你书写！",
+      "困境是成长的契机！下一局就是你的天下！",
+      "站在最后不丢人！往前冲才是王道！",
+      "每一次低谷都是反弹的起点！加油！",
+      "暂时落后算什么！翻盘才是最精彩的剧本！",
+      "失败只是暂时的！成功就在下一个转角！",
+      "最后一名也是一种力量！逆袭从这里开始！",
+      "别看现在落后！下局让他们刮目相看！",
+      "低谷是为了更高的跃起！准备好了吗？",
+      "暂时垫底不要紧！坚持就能看到希望！",
+      "输了一局没关系！重要的是下局的态度！",
+      "落后是暂时的！你的爆发力无人能及！",
+      "别灰心！每个冠军都经历过低谷！",
+      "最后一名也有尊严！奋起直追才是硬道理！",
+      "暂时落后不算输！坚持到底才是赢家！",
+      "低迷期总会过去！你的春天马上到来！",
+      "别放弃！逆袭的故事最激动人心！",
+      "落后激发斗志！下一局就是你的舞台！",
+      "暂居末席不可怕！可怕的是不敢向前！",
+      "失利是成功的铺垫！相信自己的实力！",
+      "最后一名也是参与者！下局就是逆袭局！",
+      "暂时落后没什么！重要的是永不言弃！",
+      "低谷中蕴含力量！你的反弹即将开始！",
+      "别看现在最后！下局让他们大吃一惊！",
+      "落后是为了更好的冲刺！加足马力！",
+      "暂时垫底不丢人！勇敢面对才是英雄！",
+      "失败教会你经验！下一局就用上！",
+      "最后一名也有梦想！逆袭从不迟到！"
+    ];
+
+    // 彩蛋功能：中等得分（≥0）文字库（既有成就感，又要追赶第一）
+    var midHighMessages = [
+      "不错啊！再接再厉，想象第一名就在眼前，冲刺！",
+      "干得漂亮！离第一名越来越近了，继续加油！",
+      "稳扎稳打，继续追赶，下一局超越第一名指日可待！",
+      "很有进展！坚持这个状态，胜利就在转角处等你！",
+      "不俗的表现！想想那个第一名吧，咱们来追他！",
+      "节节高升的感觉真棒！冲向第一名，就差最后一步！",
+      "保持热度！第一名看你的眼神开始紧张了哈！",
+      "你正在逼近！第一名的皇座在向你招手呢！",
+      "气势很足！继续这样，第一名的宝座很快就是你的！",
+      "渐入佳境！再努力一把，第一就在下一局等你！"
+    ];
+
+    // 彩蛋功能：中等得分（<0）文字库（幽默搞笑，鼓励继续努力）
+    var midLowMessages = [
+      "哎呀，还有很大进步空间呢！别灰心，下局翻身！",
+      "这局有点小失利，但咱们回头是岸，继续加油！",
+      "缘分让我们相聚，下局咱们就来个大反转吧！",
+      "得分有点尴尬？没关系，下一局咱们逆天改命！",
+      "这分数...嗯，鼓励你继续努力的证明！加油！",
+      "说好的逆袭呢？这就开始吧，保持勇气，继续追！",
+      "下限已触，后面只能往上飙！勇敢向前，冲！",
+      "这局有点惨，但也意味着下局有无限可能性哦！",
+      "得分有点负，但你的热情永远正！继续加油！",
+      "这个分数...只是你的开局动画，真戏还在后头！",
+      "别看现在分低，潜力股都是这样开始的！",
+      "分数是暂时的，你的毅力是永恒的！冲啊！",
+      "没事儿！这叫欲扬先抑，下局惊艳全场！",
+      "这分数有点害羞，不过下局它就开朗了！",
+      "哈哈，这局让你体验一把谷底的感觉，准备反弹！",
+      "分数虽负，斗志不灭！继续前进吧！",
+      "这算是热身局，真正的实力马上展现！",
+      "别慌！大器晚成说的就是你！",
+      "分数有点害羞地躲起来了，下局让它出来！",
+      "这局只是小插曲，精彩的还在后面！",
+      "负分不可怕，可怕的是放弃！加油！",
+      "这分数...就当是买个教训，下局赚回来！",
+      "暂时的低谷是为了更高的飞跃！",
+      "分数低迷，但你的勇气值爆表！继续！",
+      "这局算是交学费了，下局必定丰收！",
+      "别看负分，你的正能量满格！冲鸭！",
+      "这分数有点皮，下局让它老实点！",
+      "低开高走才是王道！相信自己！",
+      "分数暂时掉队，但你的决心不变！",
+      "这叫铺垫，下一局才是高潮！",
+      "负分是暂时的，翻盘是必然的！",
+      "这局让分数躲一躲，下局让它无处可逃！",
+      "别急！凤凰都要先浴火才能重生！",
+      "这分数在测试你的抗压能力呢！",
+      "暂时落后不算啥，绝地反击才刺激！",
+      "分数虽低，志气犹在！下局见真章！",
+      "这局权当练手，下局大显身手！",
+      "负分怕什么？勇气才是最大的资本！",
+      "这分数只是暂时客串一下，马上换主角！",
+      "低谷是为了让你看清前方的高峰！",
+      "分数有点调皮，下局好好管教它！",
+      "这叫蓄力，下一局爆发看你的！",
+      "别慌！英雄总是最后才登场的！",
+      "负分是成长的印记，下局就要蜕变！",
+      "这局算是预演，正式演出马上开始！",
+      "分数暂时罢工，下局让它加班！",
+      "低开是为了高走！相信逆转时刻！",
+      "这分数在考验你的心态呢！稳住！",
+      "暂时的负数是为了更大的正数！",
+      "别怕！山重水复疑无路，柳暗花明在下局！"
+    ];
+
+    // 随机获取文字（确保每次不重复）
+    var lastUsedMessages = {};
+    function getRandomMessage(type, playerIndex) {
+      var messages;
+      if (type === 'winner') {
+        messages = winnerMessages;
+      } else if (type === 'mid-high') {
+        messages = midHighMessages;
+      } else if (type === 'mid-low') {
+        messages = midLowMessages;
+      } else {
+        messages = loserMessages;
+      }
+      
+      var key = type + '_' + playerIndex;
+      
+      // 初始化该玩家的已使用消息记录
+      if (!lastUsedMessages[key]) {
+        lastUsedMessages[key] = [];
+      }
+      
+      // 如果所有消息都用过了，清空记录重新开始
+      if (lastUsedMessages[key].length >= messages.length) {
+        lastUsedMessages[key] = [];
+      }
+      
+      // 获取未使用的消息
+      var availableMessages = messages.filter(function(msg, idx) {
+        return lastUsedMessages[key].indexOf(idx) === -1;
+      });
+      
+      // 随机选择一条
+      var randomMsg = availableMessages[Math.floor(Math.random() * availableMessages.length)];
+      var msgIndex = messages.indexOf(randomMsg);
+      lastUsedMessages[key].push(msgIndex);
+      
+      return randomMsg;
+    }
+
+    // 显示彩蛋模态框
+    function showEggModal(playerName, type, playerIndex) {
+      var modal = document.getElementById('eggModal');
+      var nameDiv = document.getElementById('eggPlayerName');
+      var charDiv = document.getElementById('dancingChar');
+      var msgDiv = document.getElementById('eggMessage');
+      
+      nameDiv.textContent = playerName;
+      
+      var message = '';
+      // 根据类型设置不同的表情和消息
+      if (type === 'winner') {
+        var chars = ['🎉', '🏆', '👑', '⭐', '🎊', '🥇', '💪', '🔥'];
+        charDiv.textContent = chars[Math.floor(Math.random() * chars.length)];
+        message = getRandomMessage('winner', playerIndex);
+        msgDiv.textContent = message;
+      } else if (type === 'mid-high') {
+        var chars = ['📈', '🚀', '💯', '⚡', '👍', '🎯', '💪', '🔥'];
+        charDiv.textContent = chars[Math.floor(Math.random() * chars.length)];
+        message = getRandomMessage('mid-high', playerIndex);
+        msgDiv.textContent = message;
+      } else if (type === 'mid-low') {
+        var chars = ['💪', '🔥', '⚡', '🚀', '💯', '👊', '🎯', '😄'];
+        charDiv.textContent = chars[Math.floor(Math.random() * chars.length)];
+        message = getRandomMessage('mid-low', playerIndex);
+        msgDiv.textContent = message;
+      } else {
+        var chars2 = ['💪', '🔥', '⚡', '🚀', '💯', '👊', '🎯', '⚔️'];
+        charDiv.textContent = chars2[Math.floor(Math.random() * chars2.length)];
+        message = getRandomMessage('loser', playerIndex);
+        msgDiv.textContent = message;
+      }
+      
+      modal.style.display = 'flex';
+      
+      // 添加五彩纸屑效果（仅胜利者）
+      if (type === 'winner') {
+        createConfetti();
+      }
+      
+      // 播报彩蛋文字内容（只在自动播放开启时）
+      if (autoPlayEnabled) {
+        var speakMessage = playerName + "，" + message;
+        speakText(speakMessage, 0.85, 1.08);
+      }
+    }
+
+    // 关闭彩蛋模态框
+    function closeEggModal(event) {
+      if (event && event.target.className !== 'egg-modal') return;
+      var modal = document.getElementById('eggModal');
+      modal.style.display = 'none';
+      // 清除纸屑
+      var confettis = document.querySelectorAll('.confetti');
+      confettis.forEach(function(c) { c.remove(); });
+    }
+
+    // 创建五彩纸屑效果
+    function createConfetti() {
+      var modal = document.getElementById('eggModal');
+      var colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500'];
+      
+      for (var i = 0; i < 30; i++) {
+        (function(index) {
+          setTimeout(function() {
+            var confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.animationDelay = Math.random() * 2 + 's';
+            confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            modal.appendChild(confetti);
+            
+            setTimeout(function() { confetti.remove(); }, 5000);
+          }, index * 100);
+        })(i);
+      }
+    }
 
     var trendVisible = [];
     var showAllHistory = false;
@@ -1340,6 +1865,155 @@
       refreshInputLockState();
       updateScoreInputsEnabledUI();
       document.getElementById("sumText").innerHTML = "当前已确认人数：0，本局总和：0";
+      
+      // 播报本轮成绩
+      speakRoundScore(currentScores);
+    }
+
+    // ===== 语音播报功能 =====
+    function speakText(text, rate, pitch, callback) {
+      // 初始化语音引擎（如果还未初始化）
+      if (!selectedVoice && availableVoices.length === 0) {
+        initVoices();
+      }
+      
+      // 优化文本以获得更自然的播报效果
+      var optimizedText = optimizeTextForSpeech(text);
+      
+      var utterance = new SpeechSynthesisUtterance(optimizedText);
+      utterance.lang = 'zh-CN';
+      
+      // 使用选定的最佳语音引擎
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+      
+      // 优化语音参数以获得更自然的效果
+      // rate: 0.75-0.85 更接近自然语速
+      // pitch: 1.0-1.1 稍微提高音调听起来更有活力
+      utterance.rate = rate || 0.8;  // 稍慢的语速让人更容易理解
+      utterance.pitch = pitch || 1.05; // 略微提高音调
+      utterance.volume = 1.0;
+      
+      utterance.onstart = function() {
+        updateSpeechButton(true);
+      };
+      
+      utterance.onend = function() {
+        if (callback) {
+          callback();
+        } else {
+          // 如果没有回调，说明播报已结束
+          updateSpeechButton(false);
+        }
+      };
+      
+      utterance.onerror = function(event) {
+        console.log('语音播报错误:', event);
+        updateSpeechButton(false);
+      };
+      
+      try {
+        speechSynthesis.cancel(); // 取消之前的播报
+        // 延迟一点再播放，确保cancel生效
+        setTimeout(function() {
+          speechSynthesis.speak(utterance);
+        }, 100);
+      } catch(e) {
+        console.log('语音播报不支持或出错:', e);
+        updateSpeechButton(false);
+      }
+    }
+
+    function speakRoundScore(currentScores) {
+      // 构建本轮得分播报文本（按玩家设置的自然顺序）
+      var roundText = "第 " + roundNumber + " 局结束。本轮得分：";
+      for (var i = 0; i < playerCount; i++) {
+        var name = nameInputs[i].value.trim() || ("玩家" + (i + 1));
+        var score = currentScores[i];
+        var scoreText = '';
+        if (score > 0) {
+          scoreText = "加 " + score + " 分";
+        } else if (score < 0) {
+          scoreText = "减 " + Math.abs(score) + " 分";
+        } else {
+          scoreText = "零分";
+        }
+        roundText += name + " " + scoreText;
+        if (i < playerCount - 1) {
+          roundText += "，";
+        } else {
+          roundText += "。";
+        }
+      }
+      
+      // 构建汇总分数播报文本（按累计总分从大到小排序）
+      var totalText = "目前累计总分排名：";
+      var players = [];
+      for (var j = 0; j < playerCount; j++) {
+        var name2 = nameInputs[j].value.trim() || ("玩家" + (j + 1));
+        var total = totalScores[j];
+        players.push({ name: name2, total: total });
+      }
+      
+      // 按累计总分从大到小排序（实际总分值，不是绝对值）
+      players.sort(function(a, b) {
+        return b.total - a.total;
+      });
+      
+      for (var k = 0; k < players.length; k++) {
+        var p = players[k];
+        var totalText2 = '';
+        if (p.total > 0) {
+          totalText2 = "正 " + p.total + " 分";
+        } else if (p.total < 0) {
+          totalText2 = "负 " + Math.abs(p.total) + " 分";
+        } else {
+          totalText2 = "零分";
+        }
+        totalText += p.name + " " + totalText2;
+        if (k < players.length - 1) {
+          totalText += "，";
+        } else {
+          totalText += "。";
+        }
+      }
+      
+      // 始终保存本次播报文本，用于手动播放
+      lastRoundText = roundText;
+      lastTotalText = totalText;
+      
+      // 如果自动播放未开启，则只保存文本不播报
+      if (!autoPlayEnabled) {
+        return;
+      }
+      
+      // 第一步：播报本轮得分
+      speakText(roundText, 0.8, 1.05, function() {
+        // 播报完本轮后，延迟后播报汇总分数
+        setTimeout(function() {
+          speakText(totalText, 0.8, 1.05, function() {
+            // 所有播报结束，恢复按钮状态
+            updateSpeechButton(false);
+          });
+        }, 800); // 增加停顿时间到800ms，更自然
+      });
+    }
+
+    // 重新播放最后一次的播报结果
+    function replayLastSpeech() {
+      if (!lastRoundText || !lastTotalText) {
+        alert("暂无播报记录，请先完成一局游戏。");
+        return;
+      }
+      speakText(lastRoundText, 0.8, 1.05, function() {
+        setTimeout(function() {
+          speakText(lastTotalText, 0.8, 1.05, function() {
+            // 所有播报结束，恢复按钮状态
+            updateSpeechButton(false);
+          });
+        }, 800);
+      });
     }
 
     function resetCurrentRound() {
@@ -1444,6 +2118,7 @@
       }
 
       var max = Math.max.apply(null, totalScores);
+      var min = Math.min.apply(null, totalScores);
 
       players.sort(function (a, b) {
         if (b.score !== a.score) return b.score - a.score;
@@ -1469,10 +2144,31 @@
 
         var rankLabel = isLeader ? ("👑" + rank) : ("#" + rank);
 
+        // 为所有玩家添加彩蛋（根据排名和得分情况）
+        var easterEgg = '';
+        var isFirst = (p.score === max && max > 0);
+        var isLast = (p.score === min && min < 0 && players.length > 1);
+        var isMidHigh = (!isFirst && !isLast && p.score >= 0 && p.score !== max);
+        var isMidLow = (!isFirst && !isLast && p.score < 0 && p.score !== min);
+        
+        if (isFirst) {
+          easterEgg = '<span class="easter-egg" onclick="showEggModal(\'' + 
+                      escapeHtml(p.name).replace(/'/g, "\\'") + '\', \'winner\', ' + p.index + ')" title="点击查看惊喜！">🥚✨</span>';
+        } else if (isLast) {
+          easterEgg = '<span class="easter-egg" onclick="showEggModal(\'' + 
+                      escapeHtml(p.name).replace(/'/g, "\\'") + '\', \'loser\', ' + p.index + ')" title="点击获取鼓励！">🥚💪</span>';
+        } else if (isMidHigh) {
+          easterEgg = '<span class="easter-egg" onclick="showEggModal(\'' + 
+                      escapeHtml(p.name).replace(/'/g, "\\'") + '\', \'mid-high\', ' + p.index + ')" title="点击查看评价！">🥚⭐</span>';
+        } else if (isMidLow) {
+          easterEgg = '<span class="easter-egg" onclick="showEggModal(\'' + 
+                      escapeHtml(p.name).replace(/'/g, "\\'") + '\', \'mid-low\', ' + p.index + ')" title="点击获取鼓励！">🥚🔥</span>';
+        }
+
         html +=
           '<div class="total-item">' +
             '<span class="' + rankCls + '">' + rankLabel + '</span>' +
-            '<span class="player-name">' + escapeHtml(p.name) + '</span>' +
+            '<span class="player-name">' + escapeHtml(p.name) + easterEgg + '</span>' +
             '<span class="' + scoreCls + '">' + p.score + '</span>' +
           '</div>';
       }
@@ -1956,6 +2652,16 @@
 
     window.addEventListener("resize", resizeTrendCanvas);
 
+    // 初始化语音引擎
+    if (typeof speechSynthesis !== 'undefined') {
+      // 语音列表可能需要时间加载
+      speechSynthesis.onvoiceschanged = function() {
+        initVoices();
+      };
+      // 立即尝试初始化一次
+      initVoices();
+    }
+
     // ===== 页面初始化 =====
     initStateArrays();
     buildPlayersUI();
@@ -1967,8 +2673,16 @@
     updateStatistics();
     resizeTrendCanvas();
     document.getElementById("playerCountText").textContent = playerCount;
+    
+    // 从localStorage加载自动播放设置
+    try {
+      var savedAutoPlay = localStorage.getItem('scoreboard_autoplay');
+      if (savedAutoPlay === '1') {
+        autoPlayEnabled = true;
+        var checkbox = document.getElementById('autoPlayCheckbox');
+        if (checkbox) checkbox.checked = true;
+      }
+    } catch(e) {}
   </script>
 </body>
 </html>
-
-
