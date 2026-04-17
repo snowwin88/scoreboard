@@ -1,15 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-GRLYT60L0R"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-GRLYT60L0R');
-</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>干瞪眼计分器</title>
@@ -508,6 +499,39 @@
       to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
     }
 
+    /* ===== 语音引擎选择器 ===== */
+    .voice-selector-row {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .voice-selector-row label {
+      font-size: 13px;
+      color: #333;
+      white-space: nowrap;
+    }
+    .voice-select {
+      flex: 1 1 180px;
+      max-width: 320px;
+      padding: 5px 8px;
+      font-size: 13px;
+      border-radius: 8px;
+      border: 1px solid #aaa;
+      background: #fff;
+      box-sizing: border-box;
+    }
+    .voice-preview-btn {
+      width: auto;
+      flex: 0 0 auto;
+      padding: 5px 12px;
+      font-size: 13px;
+      background: #8b5cf6;
+      border-radius: 8px;
+    }
+
   </style>
 </head>
 
@@ -541,6 +565,11 @@
           <span>自动播放</span>
         </label>
         <span style="font-size:12px;color:#666;margin-left:8px;">(保存本局和点击彩蛋时自动语音播报)</span>
+      </div>
+      <div class="voice-selector-row">
+        <label for="voiceSelect">语音引擎：</label>
+        <select id="voiceSelect" class="voice-select" onchange="onVoiceSelectChange()"></select>
+        <button class="voice-preview-btn" onclick="previewVoice()">试听</button>
       </div>
       <div id="speakStatus" style="font-size:12px;color:#666;margin-top:6px;text-align:center;"></div>
 
@@ -715,39 +744,118 @@
     // 初始化语音引擎
     function initVoices() {
       availableVoices = speechSynthesis.getVoices();
-      
+      if (availableVoices.length === 0) return;
+
+      populateVoiceSelector();
+
+      // 尝试恢复用户之前保存的选择
+      var savedVoiceName = '';
+      try { savedVoiceName = localStorage.getItem('scoreboard_voice') || ''; } catch(e) {}
+
+      if (savedVoiceName) {
+        for (var s = 0; s < availableVoices.length; s++) {
+          if (availableVoices[s].name === savedVoiceName) {
+            selectedVoice = availableVoices[s];
+            setVoiceSelectorValue(savedVoiceName);
+            console.log('已恢复语音引擎：' + selectedVoice.name);
+            return;
+          }
+        }
+      }
+
       // 优先级列表：选择最自然的中文语音
       var voicePriority = [
-        'Tingting',           // 中文（中国大陆）- 质量较好
-        'Yaoyao',             // 中文（中国大陆）
-        'Xiaoyi',             // 中文（中国大陆）
-        'Microsoft Yunxi',    // Edge浏览器的高质量中文语音
-        'Microsoft Xiaoxiao', // Edge浏览器
-        'Microsoft Kangkang', // Edge浏览器（男声）
-        'Google 普通话',      // Google中文
-        'zh-CN',              // 通用中文标识
-        'zh-TW',              // 中文（台湾）
-        'Chinese'             // 通用中文
+        'Tingting', 'Yaoyao', 'Xiaoyi',
+        'Microsoft Yunxi', 'Microsoft Xiaoxiao', 'Microsoft Kangkang',
+        'Google 普通话', 'zh-CN', 'zh-TW', 'Chinese'
       ];
-      
-      // 尝试按优先级查找最佳语音
+
       for (var i = 0; i < voicePriority.length; i++) {
         var priorityName = voicePriority[i];
         for (var j = 0; j < availableVoices.length; j++) {
           var voice = availableVoices[j];
           if (voice.name.indexOf(priorityName) !== -1 || voice.lang.indexOf('zh') !== -1) {
             selectedVoice = voice;
+            setVoiceSelectorValue(voice.name);
             console.log('已选择语音引擎：' + voice.name + ' (' + voice.lang + ')');
             return;
           }
         }
       }
-      
+
       // 如果没找到中文语音，使用默认的第一个
-      if (availableVoices.length > 0) {
-        selectedVoice = availableVoices[0];
-        console.log('使用默认语音：' + selectedVoice.name);
+      selectedVoice = availableVoices[0];
+      setVoiceSelectorValue(selectedVoice.name);
+      console.log('使用默认语音：' + selectedVoice.name);
+    }
+
+    function populateVoiceSelector() {
+      var sel = document.getElementById('voiceSelect');
+      if (!sel) return;
+      sel.innerHTML = '';
+
+      // 分组：中文语音在前，其他语音在后
+      var zhVoices = [];
+      var otherVoices = [];
+      for (var i = 0; i < availableVoices.length; i++) {
+        var v = availableVoices[i];
+        if (v.lang && v.lang.indexOf('zh') !== -1) zhVoices.push(v);
+        else otherVoices.push(v);
       }
+
+      if (zhVoices.length > 0) {
+        var grpZh = document.createElement('optgroup');
+        grpZh.label = '中文语音';
+        for (var a = 0; a < zhVoices.length; a++) {
+          grpZh.appendChild(makeVoiceOption(zhVoices[a]));
+        }
+        sel.appendChild(grpZh);
+      }
+
+      if (otherVoices.length > 0) {
+        var grpOther = document.createElement('optgroup');
+        grpOther.label = '其他语音';
+        for (var b = 0; b < otherVoices.length; b++) {
+          grpOther.appendChild(makeVoiceOption(otherVoices[b]));
+        }
+        sel.appendChild(grpOther);
+      }
+    }
+
+    function makeVoiceOption(voice) {
+      var opt = document.createElement('option');
+      opt.value = voice.name;
+      opt.textContent = voice.name + ' (' + voice.lang + ')';
+      return opt;
+    }
+
+    function setVoiceSelectorValue(name) {
+      var sel = document.getElementById('voiceSelect');
+      if (sel) sel.value = name;
+    }
+
+    function onVoiceSelectChange() {
+      var sel = document.getElementById('voiceSelect');
+      if (!sel) return;
+      var name = sel.value;
+      for (var i = 0; i < availableVoices.length; i++) {
+        if (availableVoices[i].name === name) {
+          selectedVoice = availableVoices[i];
+          try { localStorage.setItem('scoreboard_voice', name); } catch(e) {}
+          console.log('切换语音引擎：' + name);
+          break;
+        }
+      }
+    }
+
+    function previewVoice() {
+      if (!selectedVoice) {
+        alert('暂无可用语音引擎。');
+        return;
+      }
+      speechSynthesis.cancel();
+      var text = '你好！这是语音引擎试听。当前使用的是 ' + selectedVoice.name + '。';
+      speakText(text, 0.85, 1.05);
     }
 
     // 优化播报文本，添加自然停顿
